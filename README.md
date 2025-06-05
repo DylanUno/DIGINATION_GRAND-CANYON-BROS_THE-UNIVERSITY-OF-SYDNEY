@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI-Powered Multi-Modal Health Analysis Platform
+
+This project implements the MVP for an AI-powered health analysis platform that connects rural patients with urban medical expertise through intelligent vital sign analysis and remote consultation capabilities.
+
+## Project Structure
+
+The application follows a modern Next.js architecture with the App Router pattern, structured according to the project plan:
+
+- `src/app`: Main application routes and layouts
+  - `(auth)`: Authentication-related pages
+  - `(patient)`: Patient-facing pages
+  - `(specialist)`: Specialist-facing pages
+- `src/components`: Reusable UI components
+  - `ui/`: ShadCN UI components
+  - `specialist/`: Specialist-specific components
+- `src/lib`: Utility functions and schemas
+- `src/hooks`: Custom React hooks
+
+## Features Implemented (MVP)
+
+- Landing page with professional medical aesthetic
+- Authentication flows for patients and specialists
+- Patient dashboard with analysis history and submission workflow
+- Specialist dashboard with patient queue management
+- Multi-step analysis submission workflow
+- Patient biodata collection
+- AI assessment visualization
+- Data visualization for specialists
+
+## Technology Stack
+
+- Next.js 15.x with App Router
+- React 19.x
+- TypeScript
+- TailwindCSS
+- ShadCN UI
+- Zod for form validation
+- React Hook Form
+- Various Radix UI primitives
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+   ```
+   npm install
+   ```
 
-```bash
+2. Run the development server:
+   ```
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Development Roadmap
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This MVP focuses on the UI structure and flow, aligned with Phase 1 and parts of Phase 2 of the project timeline. Future development will include:
 
-## Learn More
+1. Authentication with NextAuth.js
+2. Backend API endpoints for data submission and retrieval
+3. Database integration with PostgreSQL/Drizzle
+4. LLM integration for AI analysis
+5. File upload and processing pipeline
+6. VitalLens Python integration
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is private and proprietary.

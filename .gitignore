@@ -38,4 +38,7 @@ next-env.d.ts
 *.ntvs*
 *.njsproj
 *.sln
-*.sw? 
+*.sw?
+
+# Project Plan
+PROJECT_PLAN.md 
