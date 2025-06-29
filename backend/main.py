@@ -13,8 +13,8 @@ from contextlib import asynccontextmanager
 from config import settings
 from database import create_tables, test_connection
 
-# Import our route modules (we'll create these next)
-# from .routers import auth, patients, analysis, specialists
+# Import our route modules
+from routers import auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -99,8 +99,8 @@ async def get_config():
         "database_connected": test_connection()
     }
 
-# Include routers (we'll uncomment these as we create them)
-# app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
+# Include routers
+app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 # app.include_router(patients.router, prefix="/api/patients", tags=["patients"])
 # app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
 # app.include_router(specialists.router, prefix="/api/specialists", tags=["specialists"])
