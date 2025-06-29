@@ -1,17 +1,56 @@
-# Dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Frontend Dependencies (Next.js)
+frontend/node_modules
+frontend/.pnp
+frontend/.pnp.js
 
 # Testing
-/coverage
+frontend/coverage
 
 # Next.js
-/.next/
-/out/
+frontend/.next/
+frontend/out/
 
 # Production
-/build
+frontend/build
+
+# Backend Dependencies (Python)
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/*.so
+backend/.Python
+backend/build/
+backend/develop-eggs/
+backend/dist/
+backend/downloads/
+backend/eggs/
+backend/.eggs/
+backend/lib/
+backend/lib64/
+backend/parts/
+backend/sdist/
+backend/var/
+backend/wheels/
+backend/*.egg-info/
+backend/.installed.cfg
+backend/*.egg
+backend/MANIFEST
+
+# Virtual environments
+backend/venv/
+backend/env/
+backend/ENV/
+backend/env.bak/
+backend/venv.bak/
+
+# Backend uploads and temporary files
+backend/uploads/
+backend/temp/
+backend/*.dat
+backend/*.hea
+backend/*.mp4
+backend/*.mov
+backend/*.avi
 
 # Misc
 .DS_Store
@@ -23,9 +62,14 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Local Environment Variables
+# Python
+*.log
+
+# Environment Variables
 .env*.local
 .env
+backend/.env
+frontend/.env
 
 # TypeScript
 *.tsbuildinfo
@@ -40,5 +84,14 @@ next-env.d.ts
 *.sln
 *.sw?
 
-# Project Plan
-PROJECT_PLAN.md 
+# Database
+*.db
+*.sqlite3
+
+# AI API Keys and sensitive data
+*.key
+api_keys.txt
+
+# Project Plan and Documentation
+PROJECT_PLAN.md
+style_guide.md 

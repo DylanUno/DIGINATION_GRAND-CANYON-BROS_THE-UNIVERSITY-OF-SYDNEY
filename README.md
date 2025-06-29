@@ -1,113 +1,147 @@
-# AI-Powered Multi-Modal Health Analysis Platform - MVP Showcase
+# VitalSense Pro - AI-Powered Multi-Modal Health Analysis Platform
 
-Welcome, Judges! This README provides a guide to exploring the Minimum Viable Product (MVP) of our AI-Powered Multi-Modal Health Analysis Platform. Our platform aims to bridge the healthcare gap by connecting rural patients with urban medical expertise through intelligent vital sign analysis and remote consultation.
+A comprehensive healthcare platform that bridges the gap between patients at local health centers and urban medical specialists through intelligent vital sign analysis and remote consultation capabilities.
 
-## About the MVP
+## 🏗️ Architecture
 
-This MVP demonstrates the core user flows and interface design for both patients and specialists. It showcases:
+This is a distributed application with three main components:
 
-*   **Separate User Portals**: Distinct and secure access points for patients and medical specialists.
-*   **Authentication Flow**: Simulated login for both user types.
-*   **Patient Dashboard**: A central hub for patients to manage their health information and analyses.
-*   **New Analysis Submission**: A guided process for patients to submit their biodata (further steps for vital sign upload would be integrated in future phases).
-*   **Specialist Dashboard**: An interface for specialists to view patient information (in a real-world scenario, this would include a queue of patients awaiting consultation).
-*   **Professional & Accessible UI**: A clean, modern, and user-friendly interface built with accessibility in mind, utilizing ShadCN UI and TailwindCSS.
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend       │    │   Database      │
+│   (Vercel)      │◄──►│   (Your Laptop) │◄──►│   (Neon Cloud)  │
+│ localhost:3000  │    │ localhost:8000  │    │   Cloud URL     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
-## Technology Stack
+- **Frontend**: Next.js application (deployed on Vercel or running locally)
+- **Backend**: Python FastAPI service (runs locally on laptop)
+- **Database**: PostgreSQL (hosted on Neon cloud)
 
-*   **Framework**: Next.js 14.x with App Router
-*   **Language**: TypeScript
-*   **Styling**: TailwindCSS
-*   **UI Components**: ShadCN UI
-*   **Form Management**: React Hook Form
-*   **Schema Validation**: Zod
+## 🚀 Quick Start
 
-## Getting Started & Exploring the MVP
+### Prerequisites
 
-Follow these steps to run and test the platform:
+- Node.js 18+ and npm
+- Python 3.11+
+- Git
 
-1.  **Prerequisites**:
-    *   Node.js (v18 or later recommended)
-    *   npm (or yarn/pnpm)
+### 1. Clone and Setup
 
-2.  **Clone the Repository (if you haven't already)**:
-    ```bash
-    git clone <repository-url>
-    cd <repository-directory>
-    ```
+```bash
+git clone <your-repo-url>
+cd DIGINATION_GRAND-CANYON_UNIVERSITY-OF-SYDNEY
+```
 
-3.  **Install Dependencies**:
-    Open your terminal in the project root and run:
-    ```bash
-    npm install
-    ```
+### 2. Frontend Setup
 
-4.  **Run the Development Server**:
-    ```bash
-    npm run dev
-    ```
-    This will start the application, typically on `http://localhost:3000`.
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-5.  **Access the Platform**:
-    Open your web browser and navigate to `http://localhost:3000`. You will see the landing page.
+The frontend will be available at http://localhost:3000
 
-## Testing User Flows
+### 3. Backend Setup
 
-We've implemented hardcoded credentials for easy access to the MVP's features.
+```bash
+cd backend
+pip install -r requirements.txt
+cp env.example .env
+# Edit .env with your actual values (see backend/README.md)
+python main.py
+```
 
-### 1. Patient Flow
+The backend API will be available at http://localhost:8000
 
-*   **Navigate to Patient Login**:
-    *   From the landing page (`http://localhost:3000`), click on **"Patient Access"** (either in the header or the hero section).
-    *   This will take you to `http://localhost:3000/auth/patient/login`.
-*   **Login as a Patient**:
-    *   **Email**: `patient@example.com`
-    *   **Password**: `password123`
-    *   Click the "Login" button.
-*   **Explore Patient Dashboard**:
-    *   You'll be redirected to the patient dashboard (`http://localhost:3000/patient/dashboard`).
-    *   From here, you can navigate to:
-        *   **New Analysis**: To start a new health analysis (currently includes biodata submission).
-        *   **Analysis History** (Placeholder)
-        *   **Profile Settings** (Placeholder)
-        *   **Help & Instructions** (Placeholder)
-*   **Test Biodata Submission**:
-    *   Click on "New Analysis" from the sidebar.
-    *   You will be taken to the biodata form (`http://localhost:3000/patient/new-analysis`, which then leads to `.../biodata`).
-    *   Fill in the form (or leave defaults) and click "Save Biodata". You should see a success toast message.
-*   **Logout**:
-    *   Click the "Logout" button in the patient sidebar (visible on desktop) or the mobile menu. You will be redirected to the landing page.
+## 📁 Project Structure
 
-### 2. Specialist Flow
+```
+├── frontend/                 # Next.js application
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── (health-worker)/  # Health worker portal
+│   │   │   ├── (patient)/        # Patient portal  
+│   │   │   ├── (specialist)/     # Specialist portal
+│   │   │   └── auth/             # Authentication pages
+│   │   └── components/           # Shared UI components
+│   ├── package.json
+│   └── next.config.js
+├── backend/                  # Python FastAPI service
+│   ├── main.py              # API entry point
+│   ├── models/              # Database models
+│   ├── routers/             # API endpoints
+│   ├── services/            # Business logic
+│   ├── utils/               # Helper functions
+│   ├── requirements.txt
+│   └── uploads/             # Temporary file storage
+└── PROJECT_PLAN.md          # Detailed project specification
+```
 
-*   **Navigate to Specialist Login**:
-    *   From the landing page (`http://localhost:3000`), click on **"Specialist Login"**.
-    *   This will take you to `http://localhost:3000/auth/specialist/login`.
-*   **Login as a Specialist**:
-    *   **Professional Credentials**: `doctor123`
-    *   **Password**: `spec456`
-    *   Click the "Login" button.
-*   **Explore Specialist Dashboard**:
-    *   You'll be redirected to the specialist dashboard (`http://localhost:3000/specialist/dashboard`).
-    *   (Further specialist-specific features like patient queues and detailed analysis views would be built out in subsequent phases).
-*   **Logout**:
-    *   Click the "Logout" icon (user icon with logout arrow) in the header. You will be redirected to the landing page.
+## 🎯 Three-Portal System
 
-## Key MVP Highlights
+### 1. Health Worker Portal
+- **Purpose**: Data collection at local health centers
+- **Users**: Trained health workers/nurses
+- **Features**: Patient registration, vital signs upload, symptom recording, patient queue management
 
-*   **Clear Separation of Concerns**: Distinct layouts and navigation for different user roles.
-*   **Component-Based Architecture**: Reusable UI components for consistency and maintainability.
-*   **Responsive Design**: The interface adapts to different screen sizes.
-*   **Foundation for Future Development**: The current structure provides a solid base for integrating backend services, AI models, and more complex features.
+### 2. Specialist Portal  
+- **Purpose**: Expert medical review and consultation
+- **Users**: Licensed medical specialists
+- **Features**: AI-prioritized patient queue, data visualization, consultation tools, diagnosis coding
 
-## Next Steps (Beyond MVP)
+### 3. Patient Portal
+- **Purpose**: Results access for patients
+- **Users**: Patients with accounts
+- **Features**: Medical history, analysis results, specialist recommendations
 
-*   Full backend integration with a database (e.g., PostgreSQL with Drizzle ORM).
-*   Secure authentication (e.g., NextAuth.js).
-*   Integration of AI models for health data analysis.
-*   File upload capabilities for medical images/data.
-*   Real-time communication features for consultations.
+## 🔧 For Demo Day
 
----
+### Using ngrok for Vercel ↔ Local Backend Connection
 
-Thank you for evaluating our MVP! We're excited about the potential of this platform to improve healthcare access.
+When your frontend is deployed on Vercel but backend runs locally:
+
+```bash
+# 1. Install ngrok
+# Download from https://ngrok.com/download
+
+# 2. Start your backend
+cd backend
+python main.py
+
+# 3. In another terminal, expose backend
+ngrok http 8000
+
+# 4. Copy the ngrok URL (e.g., https://abc123.ngrok.io)
+# 5. Update frontend environment variables on Vercel to use this URL
+```
+
+## 🧠 AI & Data Processing Features
+
+- **Signal Processing**: Extract clinical metrics from raw vital signs data
+- **Video Analysis**: Contactless respiratory analysis from video
+- **LLM Integration**: AI-powered clinical assessment using GPT-4/Gemini
+- **Risk Stratification**: Automated patient prioritization
+- **Data Visualization**: Interactive charts and waveform displays
+
+## 🛡️ Security & Compliance
+
+- JWT-based authentication with role-based access control
+- HIPAA-compliant data handling
+- Encrypted data transmission and storage
+- Audit logging for all patient data access
+
+## 📚 Documentation
+
+- [Backend API Documentation](backend/README.md)
+- [Complete Project Plan](PROJECT_PLAN.md)
+- [API Documentation](http://localhost:8000/docs) (when backend is running)
+
+## 🤝 Contributing
+
+This project follows a structured development approach with clear separation between frontend UI generation and backend logic implementation.
+
+## 📄 License
+
+This project is developed for educational purposes as part of the DIGINATION competition.
