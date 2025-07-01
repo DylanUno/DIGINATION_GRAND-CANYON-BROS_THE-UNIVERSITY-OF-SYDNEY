@@ -4,48 +4,66 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71% 4%;
+    --background: 0 0% 100%; /* Pure white for maximum clarity */
+    --foreground: 0 0% 13%; /* #212121 - Soft black for readability */
+
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 0 0% 13%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 221 70% 40%;
+    --popover-foreground: 0 0% 13%;
+
+    /* Primary: Trust Blue for all main actions */
+    --primary: 221 100% 57%; /* #2979FF */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 39% 11%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 220 14% 96%;
-    --accent-foreground: 220 39% 11%;
-    --destructive: 0 84% 60%;
+
+    --secondary: 0 0% 96%; /* #F5F5F5 for subtle backgrounds */
+    --secondary-foreground: 0 0% 38%; /* #616161 */
+
+    --muted: 0 0% 93%; /* #EEEEEE for borders and dividers */
+    --muted-foreground: 0 0% 46%; /* #757575 for secondary text */
+
+    --accent: 180 41% 67%; /* Health teal for accents */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 4 90% 58%; /* #F44336 for errors and high risk */
     --destructive-foreground: 0 0% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 221 70% 50%;
-    --radius: 0.5rem;
+
+    --border: 0 0% 93%; /* #EEEEEE very light gray */
+    --input: 0 0% 93%;
+    --ring: 221 100% 57%; /* Trust blue for focus rings */
+
+    --radius: 12px; /* Slightly more rounded for friendliness */
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 20% 98%;
-    --card: 224 71% 4%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 221 70% 50%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 215 28% 17%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 28% 17%;
-    --muted-foreground: 218 11% 65%;
-    --accent: 215 28% 17%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 63% 31%;
+    --background: 0 0% 7%; /* #121212 */
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 221 100% 65%; /* Lighter trust blue for dark mode */
+    --primary-foreground: 0 0% 7%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
+
+    --accent: 180 41% 67%;
+    --accent-foreground: 0 0% 7%;
+
+    --destructive: 4 90% 65%;
     --destructive-foreground: 0 0% 98%;
-    --border: 215 28% 17%;
-    --input: 215 28% 17%;
-    --ring: 221 70% 50%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 221 100% 65%;
   }
 }
 
@@ -54,6 +72,161 @@
     @apply border-border;
   }
   body {
-    @apply bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-50;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    /* Improved line height for better readability */
+    line-height: 1.6;
   }
+
+  /* Enhanced typography scale */
+  h1 {
+    @apply text-h1 font-bold tracking-tight;
+  }
+
+  h2 {
+    @apply text-h2 font-semibold tracking-tight;
+  }
+
+  h3 {
+    @apply text-h3 font-semibold;
+  }
+
+  p {
+    @apply text-body leading-relaxed;
+  }
+
+  /* Improved focus states for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  /* Feature Icon Component */
+  .feature-icon {
+    @apply w-12 h-12 rounded-full flex items-center justify-center text-white shadow-soft;
+  }
+
+  .feature-icon.health {
+    @apply bg-health-teal;
+  }
+
+  .feature-icon.records {
+    @apply bg-record-pink;
+  }
+
+  .feature-icon.specialist {
+    @apply bg-calm-purple;
+  }
+
+  .feature-icon.alert {
+    @apply bg-alert-orange;
+  }
+
+  /* Status badges with improved colors */
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-caption font-medium;
+  }
+
+  .status-badge.processing {
+    @apply bg-blue-100 text-blue-700;
+  }
+
+  .status-badge.completed {
+    @apply bg-green-100 text-green-700;
+  }
+
+  .status-badge.urgent {
+    @apply bg-red-100 text-red-700;
+  }
+
+  .status-badge.high-risk {
+    @apply bg-red-100 text-red-700;
+  }
+
+  .status-badge.medium-risk {
+    @apply bg-orange-100 text-orange-700;
+  }
+
+  .status-badge.low-risk {
+    @apply bg-green-100 text-green-700;
+  }
+
+  /* Card component with subtle shadows */
+  .card-soft {
+    @apply bg-card border border-border rounded-lg shadow-soft;
+  }
+
+  .card-elevated {
+    @apply bg-card border border-border rounded-lg shadow-medium;
+  }
+
+  /* Pill-shaped search bar */
+  .search-pill {
+    @apply w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-pill text-body placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-trust-blue focus:border-transparent;
+  }
+
+  /* Full-width action buttons */
+  .action-button {
+    @apply w-full py-4 px-6 bg-trust-blue text-white font-semibold rounded-lg shadow-soft hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-trust-blue focus:ring-offset-2 transition-all duration-200;
+  }
+
+  .action-button.secondary {
+    @apply bg-health-teal hover:bg-teal-600 focus:ring-health-teal;
+  }
+
+  .action-button.outline {
+    @apply bg-transparent border-2 border-trust-blue text-trust-blue hover:bg-trust-blue hover:text-white;
+  }
+
+  /* Generous spacing utilities */
+  .section-spacing {
+    @apply py-8 md:py-12;
+  }
+
+  .content-spacing {
+    @apply space-y-6 md:space-y-8;
+  }
+
+  /* Empty state styling */
+  .empty-state {
+    @apply text-center py-12 px-6;
+  }
+
+  .empty-state-icon {
+    @apply w-16 h-16 mx-auto mb-4 text-neutral-400;
+  }
+
+  .empty-state-title {
+    @apply text-h3 font-semibold text-neutral-700 mb-2;
+  }
+
+  .empty-state-description {
+    @apply text-body text-neutral-500 mb-6 max-w-md mx-auto;
+  }
+}
+
+@layer utilities {
+  /* The `text-risk-high|medium|low` utilities are already generated
+   by Tailwind from the custom colors in `tailwind.config.ts`.
+   No additional CSS is needed here. */
+
+  /* Background utilities for health categories */
+  .bg-health-category {
+    @apply bg-gradient-to-br from-health-teal to-health-green;
+  }
+
+  .bg-records-category {
+    @apply bg-gradient-to-br from-record-pink to-soft-pink;
+  }
+
+  .bg-specialist-category {
+    @apply bg-gradient-to-br from-calm-purple to-blue-500;
+  }
+
+  /* Animation utilities were removed.
+ Use the generated Tailwind classes `animate-fade-in` and
+ `animate-scale-in` directly in your JSX: 
+   <div className="animate-fade-in">…</div>
+*/
 }
