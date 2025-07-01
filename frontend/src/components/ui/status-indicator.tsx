@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { CheckCircle, Clock, AlertTriangle, XCircle } from "lucide-react"
+import { CheckCircle, Clock, AlertTriangle, XCircle, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusIndicatorVariants = cva(
@@ -34,11 +34,12 @@ export interface StatusIndicatorProps
     VariantProps<typeof statusIndicatorVariants> {
   label: string
   showIcon?: boolean
+  icon?: LucideIcon
 }
 
 const StatusIndicator = React.forwardRef<HTMLDivElement, StatusIndicatorProps>(
-  ({ className, status, label, showIcon = true, ...props }, ref) => {
-    const Icon = status ? statusIcons[status] : statusIcons.neutral
+  ({ className, status, label, showIcon = true, icon, ...props }, ref) => {
+    const Icon = icon || (status ? statusIcons[status] : statusIcons.neutral)
 
     return (
       <div

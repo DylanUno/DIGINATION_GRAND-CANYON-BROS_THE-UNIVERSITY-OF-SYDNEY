@@ -26,6 +26,7 @@ const enhancedButtonVariants = cva(
         lg: "h-11 rounded-md px-8",
         xl: "h-12 rounded-lg px-6 text-base",
         icon: "h-10 w-10",
+        full: "w-full h-12 rounded-lg px-6 text-base",
       },
     },
     defaultVariants: {
