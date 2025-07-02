@@ -60,10 +60,6 @@ export default function PatientLoginPage() {
           Login
         </Button>
       </form>
-      <p className="text-center text-sm text-muted-foreground">
-        <span className="text-gray-600">Default login: </span>
-        <span className="font-medium text-primary">patient@example.com / password123</span>
-      </p>
       <p className="text-center text-sm text-gray-600">
         Don&apos;t have an account?{" "}
         <Link href="/auth/patient/register" className="font-medium text-primary hover:underline">

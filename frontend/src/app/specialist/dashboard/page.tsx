@@ -1,201 +1,398 @@
-"use client" // Keep for potential client-side interactions like sorting/filtering in future
+"use client"
 
-// Remove useState import: import { useState } from "react"
-import Link from "next/link" // Add Link import
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { StatusIndicator } from "@/components/ui/status-indicator"
+import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Filter, Search, Users, AlertOctagon, Clock, ArrowUpDown } from "lucide-react" // Added ArrowUpDown
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-// Remove imports for detailed panel components:
-// import { PatientInfoPanel } from "@/components/specialist/patient-info-panel"
-// ... and others
+  Filter,
+  Search,
+  Users,
+  AlertOctagon,
+  Clock,
+  Heart,
+  TrendingUp,
+  BookOpen,
+  GraduationCap,
+  BarChart3,
+  Activity,
+  MapPin,
+  Calendar,
+} from "lucide-react"
 
-// Placeholder data
-const initialPatients = [
+// Mock data for patient queue
+const patientQueue = [
   {
     id: "P001",
     initials: "J.D.",
     age: 45,
     gender: "Male",
-    submissionTime: "2025-06-04 09:15",
+    location: "Puskesmas Karimunjawa",
+    submissionTime: "2025-01-03 09:15",
     riskLevel: "High",
-    priorityScore: 95,
+    symptomSummary: "Chest pain, shortness of breath",
+    priority: 1,
   },
   {
     id: "P002",
     initials: "A.S.",
     age: 62,
     gender: "Female",
-    submissionTime: "2025-06-04 08:30",
+    location: "Puskesmas Semarang Utara",
+    submissionTime: "2025-01-03 08:30",
     riskLevel: "Medium",
-    priorityScore: 70,
+    symptomSummary: "Fatigue, irregular heartbeat",
+    priority: 2,
   },
   {
     id: "P003",
     initials: "R.B.",
     age: 33,
     gender: "Male",
-    submissionTime: "2025-06-03 17:45",
+    location: "Puskesmas Jepara",
+    submissionTime: "2025-01-02 17:45",
     riskLevel: "Low",
-    priorityScore: 40,
+    symptomSummary: "Routine check-up, mild headache",
+    priority: 3,
+  },
+  {
+    id: "P004",
+    initials: "M.K.",
+    age: 58,
+    gender: "Female",
+    location: "Puskesmas Kudus",
+    submissionTime: "2025-01-02 16:20",
+    riskLevel: "High",
+    symptomSummary: "Severe chest pain, dizziness",
+    priority: 1,
+  },
+  {
+    id: "P005",
+    initials: "T.W.",
+    age: 29,
+    gender: "Male",
+    location: "Puskesmas Demak",
+    submissionTime: "2025-01-02 14:10",
+    riskLevel: "Medium",
+    symptomSummary: "Palpitations, anxiety",
+    priority: 2,
   },
 ]
 
-type Patient = (typeof initialPatients)[0]
+const getRiskStatus = (riskLevel: string) => {
+  if (riskLevel === "High") return "high-risk"
+  if (riskLevel === "Medium") return "medium-risk"
+  return "low-risk"
+}
 
-const getRiskBadgeVariant = (riskLevel: string) => {
-  if (riskLevel === "High") return "destructive"
-  if (riskLevel === "Medium") return "secondary"
-  return "default"
+const getRiskColor = (riskLevel: string) => {
+  if (riskLevel === "High") return "text-red-600"
+  if (riskLevel === "Medium") return "text-orange-600"
+  return "text-green-600"
 }
 
 export default function SpecialistDashboardPage() {
-  // Remove state: const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
-  // Remove handlers: handleSelectPatient, handleCloseDetailView
+  const doctorName = "Dr. Emily Carter"
+  const specialty = "Cardiology"
+  const hospital = "Jakarta Heart Center"
+  const totalCases = patientQueue.length
+  const highPriorityCases = patientQueue.filter((p) => p.riskLevel === "High").length
 
   return (
-    // Remove the lg:grid-cols-12 and related conditional classes for the split view
-    <div className="grid flex-1 auto-rows-max items-start gap-4 md:gap-8">
-      {/* Stats Cards - always visible */}
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center">
-              <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-              Total Patients in Queue
-            </CardDescription>
-            <CardTitle className="text-3xl md:text-4xl text-primary">12</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">+5 since last hour</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center">
-              <AlertOctagon className="h-4 w-4 mr-1 text-red-500" />
-              High-Risk Patients
-            </CardDescription>
-            <CardTitle className="text-3xl md:text-4xl text-red-500">3</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">Immediate attention required</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center">
-              <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-              Avg. Processing Time
-            </CardDescription>
-            <CardTitle className="text-3xl md:text-4xl text-primary">25m</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">Per patient analysis</div>
-          </CardContent>
-        </Card>
+    <div className="flex h-screen bg-white">
+      {/* Left Sidebar - Patient Queue */}
+      <div className="w-80 border-r border-neutral-200 bg-gradient-to-b from-neutral-50 to-white">
+        <div className="p-4 border-b border-neutral-200">
+          <h2 className="text-h2 font-semibold text-neutral-900 mb-2">Patient Queue</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <Badge variant="outline" className="text-trust-blue border-trust-blue">
+              {totalCases} Total Cases
+            </Badge>
+            <Badge variant="destructive">{highPriorityCases} High Priority</Badge>
+          </div>
+
+          {/* Filters */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-500" />
+              <Input type="search" placeholder="Search patients..." className="pl-10 h-10 text-sm" />
+            </div>
+            <div className="flex gap-2">
+              <Select defaultValue="risk">
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="risk">Sort by Risk</SelectItem>
+                  <SelectItem value="time">Sort by Time</SelectItem>
+                  <SelectItem value="location">Sort by Location</SelectItem>
+                </SelectContent>
+              </Select>
+              <EnhancedButton variant="outline" size="sm">
+                <Filter className="h-3 w-3" />
+              </EnhancedButton>
+            </div>
+          </div>
+        </div>
+
+        {/* Patient List */}
+        <div className="overflow-y-auto h-full">
+          {patientQueue
+            .sort((a, b) => a.priority - b.priority)
+            .map((patient) => (
+              <div
+                key={patient.id}
+                className="p-4 border-b border-neutral-100 hover:bg-blue-50 cursor-pointer transition-colors"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-body text-neutral-900">{patient.initials}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {patient.age}y {patient.gender}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-1 mt-1">
+                      <MapPin className="h-3 w-3 text-neutral-500" />
+                      <span className="text-xs text-neutral-600">{patient.location}</span>
+                    </div>
+                  </div>
+                  <StatusIndicator
+                    status={getRiskStatus(patient.riskLevel) as any}
+                    label={patient.riskLevel}
+                    showIcon={false}
+                    className="text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-neutral-500" />
+                    <span className="text-xs text-neutral-600">{patient.submissionTime}</span>
+                  </div>
+                  <p className="text-xs text-neutral-700 line-clamp-2">{patient.symptomSummary}</p>
+                </div>
+
+                <EnhancedButton
+                  asChild
+                  size="sm"
+                  className="w-full mt-3"
+                  variant={patient.riskLevel === "High" ? "destructive" : "outline"}
+                >
+                  <Link href={`/specialist/patient/${patient.id}`}>
+                    {patient.riskLevel === "High" ? "Review Urgent" : "Review Case"}
+                  </Link>
+                </EnhancedButton>
+              </div>
+            ))}
+        </div>
       </div>
 
-      {/* Patient Queue Card */}
-      <Card>
-        <CardHeader className="px-4 sm:px-7">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Patient Queue</CardTitle>
-              <CardDescription>Manage and prioritize incoming patient analyses.</CardDescription>
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Header */}
+        <div className="p-6 border-b border-neutral-200 bg-gradient-to-r from-neutral-50 to-blue-50">
+          <h1 className="text-display font-bold text-neutral-900">
+            {doctorName}, {specialty}
+          </h1>
+          <p className="text-body-lg text-neutral-600 mt-1">{hospital}</p>
+          <div className="flex items-center gap-4 mt-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-trust-blue" />
+              <span className="text-body text-neutral-700">{totalCases} cases in queue</span>
             </div>
-            {/* Remove XCircle button for closing details */}
-          </div>
-          <div className="mt-4 flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 gap-1">
-                  <Filter className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Filter</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuCheckboxItem checked>High Risk</DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem>Medium Risk</DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem>Low Risk</DropdownMenuCheckboxItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Search patients..." className="pl-8 w-full bg-white" />
+            <div className="flex items-center gap-2">
+              <AlertOctagon className="h-4 w-4 text-red-500" />
+              <span className="text-body text-neutral-700">{highPriorityCases} high-priority cases</span>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Patient ID</TableHead>
-                <TableHead>Initials</TableHead>
-                <TableHead>Age</TableHead>
-                <TableHead>Gender</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Submission Time{" "}
-                  <Button variant="ghost" size="icon" className="h-6 w-6 ml-1">
-                    {" "}
-                    {/* Adjusted button */}
-                    <ArrowUpDown className="h-3 w-3" />
-                  </Button>
-                </TableHead>
-                <TableHead>Risk Level</TableHead>
-                <TableHead className="hidden sm:table-cell">Priority</TableHead> {/* Show priority on sm and up */}
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {initialPatients.map((patient) => (
-                <TableRow key={patient.id} className="hover:bg-muted/50">
-                  <TableCell className="font-medium">{patient.id}</TableCell>
-                  <TableCell>{patient.initials}</TableCell>
-                  <TableCell>{patient.age}</TableCell>
-                  <TableCell>{patient.gender}</TableCell>
-                  <TableCell className="hidden md:table-cell">{patient.submissionTime}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={getRiskBadgeVariant(patient.riskLevel)}
-                      className={
-                        patient.riskLevel === "Low"
-                          ? "bg-brand-medical-green text-white"
-                          : patient.riskLevel === "Medium"
-                            ? "bg-orange-400 text-white"
-                            : ""
-                      }
-                    >
-                      {patient.riskLevel}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">{patient.priorityScore}</TableCell>
-                  <TableCell>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/specialist/patient/${patient.id}`}>View Details</Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      {/* Remove the detailed patient analysis view section */}
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Advanced Analytics Panel */}
+          <Card className="shadow-soft border-neutral-200">
+            <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
+              <CardTitle className="text-h2 text-neutral-900 flex items-center gap-2">
+                <BarChart3 className="h-6 w-6 text-trust-blue" />
+                Advanced Analytics Panel
+              </CardTitle>
+              <CardDescription className="text-body text-neutral-600">
+                Population health insights, AI performance metrics, and clinical research dashboard
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid gap-6 md:grid-cols-3">
+                {/* Population Health Insights */}
+                <div className="space-y-4">
+                  <h3 className="text-h3 font-semibold text-neutral-900 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-health-teal" />
+                    Population Health Insights
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="text-h2 font-bold text-trust-blue">23%</div>
+                      <p className="text-body-sm text-neutral-600">Hypertension prevalence increase</p>
+                    </div>
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="text-h2 font-bold text-health-teal">87%</div>
+                      <p className="text-body-sm text-neutral-600">Early detection success rate</p>
+                    </div>
+                    <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                      <div className="text-h2 font-bold text-alert-orange">15</div>
+                      <p className="text-body-sm text-neutral-600">High-risk cases this week</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Performance Metrics */}
+                <div className="space-y-4">
+                  <h3 className="text-h3 font-semibold text-neutral-900 flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-calm-purple" />
+                    AI Performance Metrics
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                      <div className="text-h2 font-bold text-calm-purple">96.3%</div>
+                      <p className="text-body-sm text-neutral-600">AI-Specialist Agreement</p>
+                    </div>
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="text-h2 font-bold text-trust-blue">3.2 min</div>
+                      <p className="text-body-sm text-neutral-600">Average analysis time</p>
+                    </div>
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="text-h2 font-bold text-health-teal">99.1%</div>
+                      <p className="text-body-sm text-neutral-600">System accuracy rate</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clinical Research Dashboard */}
+                <div className="space-y-4">
+                  <h3 className="text-h3 font-semibold text-neutral-900 flex items-center gap-2">
+                    <Heart className="h-5 w-5 text-record-pink" />
+                    Clinical Research Dashboard
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-pink-50 rounded-lg border border-pink-200">
+                      <div className="text-h2 font-bold text-record-pink">2,847</div>
+                      <p className="text-body-sm text-neutral-600">Cases contributed to research</p>
+                    </div>
+                    <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                      <div className="text-h2 font-bold text-warm-amber">12</div>
+                      <p className="text-body-sm text-neutral-600">Active research studies</p>
+                    </div>
+                    <div className="p-3 bg-teal-50 rounded-lg border border-teal-200">
+                      <div className="text-h2 font-bold text-health-teal">5</div>
+                      <p className="text-body-sm text-neutral-600">Publications this year</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Research Participation */}
+              <div className="mt-6 p-4 bg-gradient-to-r from-trust-blue/10 to-calm-purple/10 rounded-lg border border-trust-blue/20">
+                <h4 className="font-semibold text-h3 text-neutral-900 mb-2">Active Research Participation</h4>
+                <p className="text-body text-neutral-600 mb-3">
+                  Your anonymized case reviews contribute to advancing cardiovascular AI research and improving rural
+                  healthcare outcomes.
+                </p>
+                <EnhancedButton variant="outline" size="sm">
+                  View Research Impact
+                </EnhancedButton>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Professional Development */}
+          <Card className="shadow-soft border-neutral-200">
+            <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
+              <CardTitle className="text-h2 text-neutral-900 flex items-center gap-2">
+                <GraduationCap className="h-6 w-6 text-calm-purple" />
+                Professional Development
+              </CardTitle>
+              <CardDescription className="text-body text-neutral-600">
+                Continuing education, peer consultation network, and clinical guidelines
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Continuing Education */}
+                <div className="space-y-4">
+                  <h3 className="text-h3 font-semibold text-neutral-900 flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-trust-blue" />
+                    Continuing Education
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <h4 className="font-medium text-body text-neutral-900 mb-1">
+                        Advanced ECG Interpretation in Rural Settings
+                      </h4>
+                      <p className="text-body-sm text-neutral-600 mb-2">CME Credits: 4.5 | Duration: 3 hours</p>
+                      <EnhancedButton size="sm" variant="outline">
+                        Start Course
+                      </EnhancedButton>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <h4 className="font-medium text-body text-neutral-900 mb-1">
+                        AI-Assisted Diagnosis: Best Practices
+                      </h4>
+                      <p className="text-body-sm text-neutral-600 mb-2">CME Credits: 2.0 | Duration: 1.5 hours</p>
+                      <EnhancedButton size="sm" variant="outline">
+                        Continue Course
+                      </EnhancedButton>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Peer Consultation & Guidelines */}
+                <div className="space-y-4">
+                  <h3 className="text-h3 font-semibold text-neutral-900 flex items-center gap-2">
+                    <Users className="h-5 w-5 text-health-teal" />
+                    Peer Consultation Network
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-teal-50 rounded-lg border border-teal-200">
+                      <h4 className="font-medium text-body text-neutral-900 mb-1">Cardiology Specialist Network</h4>
+                      <p className="text-body-sm text-neutral-600 mb-2">
+                        47 specialists online | 3 pending consultations
+                      </p>
+                      <EnhancedButton size="sm" variant="outline">
+                        Join Discussion
+                      </EnhancedButton>
+                    </div>
+                    <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                      <h4 className="font-medium text-body text-neutral-900 mb-1">Clinical Guidelines Database</h4>
+                      <p className="text-body-sm text-neutral-600 mb-2">Latest AHA/ESC guidelines | Updated weekly</p>
+                      <EnhancedButton size="sm" variant="outline">
+                        Access Guidelines
+                      </EnhancedButton>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="mt-6 flex flex-wrap gap-3">
+                <EnhancedButton variant="outline" size="sm">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Schedule Peer Review
+                </EnhancedButton>
+                <EnhancedButton variant="outline" size="sm">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Access Medical Library
+                </EnhancedButton>
+                <EnhancedButton variant="outline" size="sm">
+                  <Users className="h-4 w-4 mr-2" />
+                  Join Case Discussion
+                </EnhancedButton>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
