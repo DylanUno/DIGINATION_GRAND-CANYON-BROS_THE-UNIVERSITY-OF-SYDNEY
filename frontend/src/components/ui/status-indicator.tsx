@@ -1,58 +1,53 @@
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { CheckCircle, Clock, AlertTriangle, XCircle, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { LucideIcon } from "lucide-react"
 
-const statusIndicatorVariants = cva(
-  "inline-flex items-center gap-2 px-3 py-1 rounded-full text-caption font-medium",
-  {
-    variants: {
-      status: {
-        completed: "bg-green-100 text-green-700",
-        processing: "bg-blue-100 text-blue-700",
-        urgent: "bg-red-100 text-red-700",
-        warning: "bg-orange-100 text-orange-700",
-        neutral: "bg-gray-100 text-gray-700",
-      },
-    },
-    defaultVariants: {
-      status: "neutral",
-    },
-  }
-)
-
-const statusIcons = {
-  completed: CheckCircle,
-  processing: Clock,
-  urgent: AlertTriangle,
-  warning: AlertTriangle,
-  neutral: Clock,
-}
-
-export interface StatusIndicatorProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof statusIndicatorVariants> {
+interface StatusIndicatorProps extends React.HTMLAttributes<HTMLDivElement> {
+  status: "processing" | "completed" | "urgent" | "high-risk" | "medium-risk" | "low-risk"
+  icon?: LucideIcon
   label: string
   showIcon?: boolean
-  icon?: LucideIcon
+}
+
+const statusConfig = {
+  processing: {
+    className: "status-badge processing",
+    iconColor: "text-blue-600",
+  },
+  completed: {
+    className: "status-badge completed",
+    iconColor: "text-green-600",
+  },
+  urgent: {
+    className: "status-badge urgent",
+    iconColor: "text-red-600",
+  },
+  "high-risk": {
+    className: "status-badge high-risk",
+    iconColor: "text-red-600",
+  },
+  "medium-risk": {
+    className: "status-badge medium-risk",
+    iconColor: "text-orange-600",
+  },
+  "low-risk": {
+    className: "status-badge low-risk",
+    iconColor: "text-green-600",
+  },
 }
 
 const StatusIndicator = React.forwardRef<HTMLDivElement, StatusIndicatorProps>(
-  ({ className, status, label, showIcon = true, icon, ...props }, ref) => {
-    const Icon = icon || (status ? statusIcons[status] : statusIcons.neutral)
+  ({ className, status, icon: Icon, label, showIcon = true, ...props }, ref) => {
+    const config = statusConfig[status]
 
     return (
-      <div
-        className={cn(statusIndicatorVariants({ status, className }))}
-        ref={ref}
-        {...props}
-      >
-        {showIcon && <Icon className="w-3 h-3" />}
-        <span>{label}</span>
+      <div ref={ref} className={cn(config.className, className)} {...props}>
+        {showIcon && Icon && <Icon className={cn("w-4 h-4 mr-1.5", config.iconColor)} />}
+        {label}
       </div>
     )
-  }
+  },
 )
 StatusIndicator.displayName = "StatusIndicator"
 
-export { StatusIndicator, statusIndicatorVariants } 
+export { StatusIndicator } 
