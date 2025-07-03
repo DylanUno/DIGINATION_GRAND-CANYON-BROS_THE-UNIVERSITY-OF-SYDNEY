@@ -6,21 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { HeartPulse, Shield } from "lucide-react"
 import Link from "next/link"
 
-interface RoleConfig {
-  title: string
-  description: string
-  fields: Array<{
-    id: string
-    label: string
-    type: string
-    placeholder?: string
-  }>
-  redirectPath: string
-  badge: string
-  showLicenseStatus?: boolean
-}
-
-const roleConfig: Record<string, RoleConfig> = {
+const roleConfig = {
   "health-worker": {
     title: "Health Worker Portal",
     description: "Access your community health center dashboard and patient management tools.",
