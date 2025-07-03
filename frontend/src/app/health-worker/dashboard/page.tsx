@@ -1,3 +1,5 @@
+"use client"
+
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { StatusIndicator } from "@/components/ui/status-indicator"

@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { HealthWorkerSidebar } from "@/components/health-worker/sidebar"
 import { HeartPulse, Menu, LogOut, Bell } from "lucide-react"

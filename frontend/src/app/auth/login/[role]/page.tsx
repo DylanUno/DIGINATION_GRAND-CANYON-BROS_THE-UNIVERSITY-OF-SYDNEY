@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import { StatusIndicator } from "@/components/ui/status-indicator"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { Input } from "@/components/ui/input"
@@ -5,8 +8,32 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { HeartPulse, Shield } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
-const roleConfig = {
+type RoleType = "health-worker" | "specialist" | "patient"
+
+// Hardcoded credentials for development
+const CREDENTIALS: Record<RoleType, { username: string; password: string }> = {
+  "health-worker": { username: "worker@puskesmas.com", password: "worker123" },
+  specialist: { username: "doctor@hospital.com", password: "doctor123" },
+  patient: { username: "patient@example.com", password: "patient123" },
+}
+
+type RoleConfigType = {
+  title: string;
+  description: string;
+  fields: Array<{
+    id: string;
+    label: string;
+    type: string;
+    placeholder?: string;
+  }>;
+  redirectPath: string;
+  badge: string;
+  showLicenseStatus?: boolean;
+}
+
+const roleConfig: Record<RoleType, RoleConfigType> = {
   "health-worker": {
     title: "Health Worker Portal",
     description: "Access your community health center dashboard and patient management tools.",
@@ -41,7 +68,14 @@ const roleConfig = {
 }
 
 export default function RoleLoginPage({ params }: { params: { role: string } }) {
-  const config = roleConfig[params.role as keyof typeof roleConfig]
+  const router = useRouter()
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  })
+  const [error, setError] = useState("")
+  const role = params.role as RoleType
+  const config = roleConfig[role]
 
   if (!config) {
     return (
@@ -59,6 +93,29 @@ export default function RoleLoginPage({ params }: { params: { role: string } }) 
         </Card>
       </div>
     )
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // For development, display the expected credentials in console
+    console.log(`Expected credentials for ${role}:`, CREDENTIALS[role])
+    
+    const validCredentials = CREDENTIALS[role]
+    
+    if (formData.username === validCredentials.username && 
+        formData.password === validCredentials.password) {
+      // Success! Redirect to appropriate dashboard
+      router.push(config.redirectPath)
+    } else {
+      // Show error
+      setError("Invalid credentials. Please try again.")
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   return (
@@ -82,21 +139,51 @@ export default function RoleLoginPage({ params }: { params: { role: string } }) 
         )}
       </div>
 
-      <form className="space-y-4">
-        {config.fields.map((field) => (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id} className="text-body font-medium text-neutral-700">
-              {field.label}
-            </Label>
-            <Input
-              id={field.id}
-              type={field.type}
-              placeholder={field.placeholder}
-              required
-              className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue"
-            />
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+            {error}
           </div>
-        ))}
+        )}
+        
+        <div className="space-y-2">
+          <Label htmlFor="username" className="text-body font-medium text-neutral-700">
+            {config.fields[0].label}
+          </Label>
+          <Input
+            id="username"
+            name="username"
+            type={config.fields[0].type}
+            placeholder={config.fields[0].placeholder}
+            required
+            value={formData.username}
+            onChange={handleChange}
+            className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-body font-medium text-neutral-700">
+            Password
+          </Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Enter your password"
+            required
+            value={formData.password}
+            onChange={handleChange}
+            className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue"
+          />
+        </div>
+
+        {/* Development credential info */}
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-700 text-sm">
+          <p><strong>Development Credentials:</strong></p>
+          <p>Username: {CREDENTIALS[role].username}</p>
+          <p>Password: {CREDENTIALS[role].password}</p>
+        </div>
 
         <EnhancedButton type="submit" size="full" className="mt-6">
           Access Portal
