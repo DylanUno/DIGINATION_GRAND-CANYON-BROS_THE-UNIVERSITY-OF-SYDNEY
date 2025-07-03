@@ -16,8 +16,10 @@ export default function PatientDashboardLayout({
     { href: "/patient/dashboard", label: "Dashboard" },
     { href: "/patient/results", label: "Hasil Terbaru" },
     { href: "/patient/analysis-history", label: "Riwayat Medis" },
-    { href: "/patient/new-analysis", label: "Analisis Baru" },
-    { href: "/patient/profile-settings", label: "Pengaturan Profil" },
+    { href: "/patient/appointments", label: "Janji Temu" },
+    { href: "/patient/messages", label: "Pesan Aman" },
+    { href: "/patient/education", label: "Edukasi Kesehatan" },
+    { href: "/patient/privacy", label: "Privasi & Persetujuan" },
     { href: "/patient/help", label: "Bantuan" },
   ]
 
@@ -28,7 +30,7 @@ export default function PatientDashboardLayout({
         <header className="flex h-14 items-center gap-4 border-b border-neutral-200 bg-gradient-to-r from-neutral-50 to-white px-4 lg:h-[60px] lg:px-6">
           <Sheet>
             <SheetTrigger asChild>
-              <EnhancedButton variant="outline" size="icon" className="shrink-0 md:hidden">
+              <EnhancedButton variant="outline" size="icon-sm" className="shrink-0 md:hidden">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </EnhancedButton>

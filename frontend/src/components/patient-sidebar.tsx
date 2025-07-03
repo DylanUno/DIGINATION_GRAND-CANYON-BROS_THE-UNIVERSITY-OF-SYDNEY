@@ -15,16 +15,16 @@ import {
   HelpCircle,
   LogOut,
   HeartPulse,
-  User,
-  Activity,
 } from "lucide-react"
 
 const navItems = [
   { href: "/patient/dashboard", label: "Dashboard", icon: Home },
   { href: "/patient/results", label: "Hasil Terbaru", icon: FileText },
   { href: "/patient/analysis-history", label: "Riwayat Medis", icon: Clock },
-  { href: "/patient/new-analysis", label: "Analisis Baru", icon: Activity },
-  { href: "/patient/profile-settings", label: "Pengaturan Profil", icon: User },
+  { href: "/patient/appointments", label: "Janji Temu", icon: Calendar },
+  { href: "/patient/messages", label: "Pesan Aman", icon: MessageSquare },
+  { href: "/patient/education", label: "Edukasi Kesehatan", icon: BookOpen },
+  { href: "/patient/privacy", label: "Privasi & Persetujuan", icon: Shield },
   { href: "/patient/help", label: "Bantuan", icon: HelpCircle },
 ]
 

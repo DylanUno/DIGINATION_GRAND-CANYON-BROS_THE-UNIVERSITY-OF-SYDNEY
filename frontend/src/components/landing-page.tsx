@@ -106,7 +106,7 @@ export default function LandingPageComponent() {
               <div className="relative animate-fade-in">
                 <div className="absolute inset-0 bg-gradient-to-br from-trust-blue/20 to-health-teal/20 rounded-2xl blur-3xl"></div>
                 <Image
-                  src="/placeholder.svg?width=600&height=600"
+                  src="/placeholder.svg"
                   width="600"
                   height="600"
                   alt="AI Health Analysis Platform Dashboard"

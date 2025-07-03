@@ -78,15 +78,15 @@ export default function PatientDashboardPage() {
             </Link>
           </EnhancedButton>
           <EnhancedButton asChild size="lg" variant="outline" className="h-20 flex-col">
-            <Link href="/patient/analysis-history">
+            <Link href="/patient/medical-history">
               <Clock className="h-6 w-6 mb-2" />
               View All Medical History
             </Link>
           </EnhancedButton>
           <EnhancedButton asChild size="lg" variant="outline" className="h-20 flex-col">
-            <Link href="/patient/new-analysis">
+            <Link href="/patient/appointments">
               <Calendar className="h-6 w-6 mb-2" />
-              Request New Analysis
+              Book Follow-up Appointment
             </Link>
           </EnhancedButton>
         </CardContent>

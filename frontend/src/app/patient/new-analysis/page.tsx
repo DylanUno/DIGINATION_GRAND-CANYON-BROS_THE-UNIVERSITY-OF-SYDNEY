@@ -90,21 +90,81 @@ export default function NewAnalysisPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="bg-gradient-to-r from-health-teal/10 to-blue-50 rounded-xl p-6 border border-health-teal/20">
-        <h1 className="text-display font-bold text-neutral-900">Analisis Kesehatan Baru</h1>
-        <p className="text-body text-neutral-600 mt-2">
-          Ikuti langkah-langkah berikut untuk melakukan analisis kesehatan lengkap dengan teknologi AI multi-modal
+      <div>
+        <h1 className="text-display font-bold text-neutral-900">New Health Screening</h1>
+        <p className="text-body-lg text-neutral-600 mt-2">
+          Follow these steps to submit your health data for AI analysis and specialist review.
         </p>
-        <div className="flex items-center gap-4 mt-4">
-          <Badge variant="outline" className="text-trust-blue border-trust-blue">
-            Total waktu: ~20 menit
-          </Badge>
-          <Badge variant="outline" className="text-health-teal border-health-teal">
-            5 Modalitas Vital Sign
-          </Badge>
-        </div>
       </div>
+
+      <Card className="shadow-soft border-neutral-200">
+        <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
+          <CardTitle className="text-h2 text-neutral-900 flex items-center gap-2">
+            <Heart className="h-6 w-6 text-health-teal" />
+            Health Screening Workflow
+          </CardTitle>
+          <CardDescription className="text-body text-neutral-600">
+            Complete these steps to get comprehensive health insights from our AI system and volunteer specialists.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-health-teal/10 rounded-lg border border-blue-200">
+            <ListChecks className="h-8 w-8 text-trust-blue mr-4 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-h3 text-neutral-900">Step 1: Pre-Screening Preparation</h3>
+              <p className="text-body text-neutral-600">
+                Review guidelines and prepare your health monitoring toolkit.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-health-teal/10 rounded-lg border border-blue-200">
+            <UploadCloud className="h-8 w-8 text-trust-blue mr-4 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-h3 text-neutral-900">Step 2: Vital Signs Data Upload</h3>
+              <p className="text-body text-neutral-600">
+                Upload your ECG, PPG data files and enter vital measurements.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-health-teal/10 rounded-lg border border-blue-200">
+            <FileCheck className="h-8 w-8 text-trust-blue mr-4 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-h3 text-neutral-900">Step 3: Current Symptoms & Health Context</h3>
+              <p className="text-body text-neutral-600">
+                Provide details about your current condition and any concerns.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-health-teal/10 rounded-lg border border-blue-200">
+            <Video className="h-8 w-8 text-trust-blue mr-4 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-h3 text-neutral-900">Step 4: Contactless Respiratory Analysis</h3>
+              <p className="text-body text-neutral-600">
+                Upload or record a video for contactless breathing pattern analysis.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-health-teal/10 rounded-lg border border-blue-200">
+            <Send className="h-8 w-8 text-trust-blue mr-4 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-h3 text-neutral-900">Step 5: AI Analysis & Specialist Review</h3>
+              <p className="text-body text-neutral-600">
+                Review your data and submit for AI analysis and specialist consultation.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center py-6">
+            <p className="text-body text-neutral-500 italic">
+              Detailed forms for each step will guide you through the complete screening process.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Requirements Check */}
       <Card className="shadow-soft border-neutral-200">
