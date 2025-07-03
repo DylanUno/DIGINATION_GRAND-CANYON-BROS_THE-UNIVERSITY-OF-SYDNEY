@@ -1,14 +1,13 @@
-import { EnhancedButton } from "@/components/ui/enhanced-button"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { StatusIndicator } from "@/components/ui/status-indicator"
-import { ArrowLeft, Download, Share, AlertTriangle, CheckCircle, Heart, Activity, ArrowRight, FileCheck, User, Upload } from "lucide-react"
+import { ArrowLeft, Download, Share, AlertTriangle, CheckCircle, Heart, Activity } from "lucide-react"
 import Link from "next/link"
 
-// Mock analysis results data - Indonesian context
+// Mock analysis results data
 const analysisResults = {
   id: "A001",
-  patientName: "Ahmad Wijaya",
+  patientName: "John Doe",
   patientId: "P001",
   analysisDate: "2025-01-02",
   analysisTime: "14:30",
@@ -17,71 +16,72 @@ const analysisResults = {
   vitalSigns: {
     heartRate: { value: 78, unit: "bpm", status: "normal", range: "60-100" },
     bloodPressure: { systolic: 145, diastolic: 92, unit: "mmHg", status: "elevated", range: "120/80" },
-    respiratoryRate: { value: 18, unit: "napas/menit", status: "normal", range: "12-20" },
+    respiratoryRate: { value: 18, unit: "breaths/min", status: "normal", range: "12-20" },
     spO2: { value: 97, unit: "%", status: "normal", range: "95-100" },
     temperature: { value: 36.8, unit: "°C", status: "normal", range: "36.1-37.2" },
   },
   aiFindings: [
     {
-      category: "Kardiovaskular",
-      finding: "Tekanan darah tinggi terdeteksi",
+      category: "Cardiovascular",
+      finding: "Elevated blood pressure detected",
       severity: "Moderate",
       confidence: 92,
     },
     {
-      category: "Ritme Jantung",
-      finding: "Kontraksi ventrikel prematur sesekali (PVC)",
+      category: "Cardiac Rhythm",
+      finding: "Occasional premature ventricular contractions (PVCs)",
       severity: "Mild",
       confidence: 78,
     },
     {
-      category: "Pernapasan",
-      finding: "Pola pernapasan normal teramati",
+      category: "Respiratory",
+      finding: "Normal respiratory patterns observed",
       severity: "Normal",
       confidence: 95,
     },
-    {
-      category: "Metabolik",
-      finding: "Indikasi kontrol gula darah yang membaik",
-      severity: "Normal",
-      confidence: 89,
-    },
   ],
   recommendations: [
-    "Pantau tekanan darah secara teratur",
-    "Pertimbangkan modifikasi gaya hidup (diet, olahraga)",
-    "Janji temu lanjutan dalam 2 minggu",
-    "Lanjutkan pengobatan diabetes saat ini",
-    "Kurangi asupan garam dalam makanan",
+    "Monitor blood pressure regularly",
+    "Consider lifestyle modifications (diet, exercise)",
+    "Follow-up appointment in 2 weeks",
+    "Continue current diabetes medication",
   ],
   specialistNotes:
-    "Pasien menunjukkan tanda-tanda hipertensi progresif. Rekomendasikan konsultasi kardiologi jika tekanan darah tetap tinggi. Perlu evaluasi faktor risiko tambahan.",
+    "Patient shows signs of hypertension progression. Recommend cardiology consultation if BP remains elevated.",
 }
 
 const getStatusColor = (status: string) => {
   switch (status) {
     case "normal":
-      return "text-health-teal"
+      return "text-brand-medical-green"
     case "elevated":
     case "high":
-      return "text-critical-red"
+      return "text-red-500"
     case "low":
-      return "text-trust-blue"
+      return "text-blue-500"
     default:
-      return "text-neutral-500"
+      return "text-gray-500"
   }
 }
 
 const getSeverityBadge = (severity: string) => {
   switch (severity) {
     case "Normal":
-      return <StatusIndicator status="completed" label="Normal" showIcon={false} />
+      return <Badge className="bg-brand-medical-green text-white">Normal</Badge>
     case "Mild":
-      return <StatusIndicator status="warning" label="Ringan" showIcon={false} />
+      return (
+        <Badge variant="secondary" className="bg-yellow-400 text-white">
+          Mild
+        </Badge>
+      )
     case "Moderate":
-      return <StatusIndicator status="processing" label="Sedang" showIcon={false} />
+      return (
+        <Badge variant="secondary" className="bg-orange-400 text-white">
+          Moderate
+        </Badge>
+      )
     case "Severe":
-      return <StatusIndicator status="urgent" label="Parah" showIcon={false} />
+      return <Badge variant="destructive">Severe</Badge>
     default:
       return <Badge variant="outline">{severity}</Badge>
   }
@@ -90,13 +90,13 @@ const getSeverityBadge = (severity: string) => {
 const getRiskColor = (risk: string) => {
   switch (risk) {
     case "High":
-      return "border-critical-red bg-red-50"
+      return "text-red-600 bg-red-100 border-red-500"
     case "Medium":
-      return "border-alert-orange bg-orange-50"
+      return "text-orange-600 bg-orange-100 border-orange-500"
     case "Low":
-      return "border-health-teal bg-green-50"
+      return "text-green-600 bg-green-100 border-green-500"
     default:
-      return "border-neutral-300 bg-neutral-50"
+      return "text-gray-600 bg-gray-100 border-gray-500"
   }
 }
 
@@ -104,55 +104,50 @@ export default function AnalysisResultsPage({ params }: { params: { id: string }
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <EnhancedButton asChild variant="outline" size="sm">
+        <Button asChild variant="outline" size="icon">
           <Link href="/health-worker/queue">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali
+            <ArrowLeft className="h-4 w-4" />
           </Link>
-        </EnhancedButton>
+        </Button>
         <div className="flex-1">
-          <h1 className="text-display font-bold text-neutral-900">Hasil Analisis AI</h1>
-          <p className="text-body text-neutral-600">
-            {analysisResults.patientName} ({analysisResults.patientId}) • {analysisResults.analysisDate} pukul{" "}
+          <h1 className="text-2xl font-semibold md:text-3xl text-gray-800">Analysis Results</h1>
+          <p className="text-gray-600">
+            {analysisResults.patientName} ({analysisResults.patientId}) • {analysisResults.analysisDate} at{" "}
             {analysisResults.analysisTime}
           </p>
         </div>
         <div className="flex gap-2">
-          <EnhancedButton variant="outline" size="sm">
+          <Button variant="outline">
             <Share className="mr-2 h-4 w-4" />
-            Bagikan
-          </EnhancedButton>
-          <EnhancedButton variant="outline" size="sm">
+            Share
+          </Button>
+          <Button variant="outline">
             <Download className="mr-2 h-4 w-4" />
-            Ekspor
-          </EnhancedButton>
+            Export
+          </Button>
         </div>
       </div>
 
       {/* Overall Risk Assessment */}
-      <Card className={`border-2 shadow-soft ${getRiskColor(analysisResults.overallRisk)}`}>
+      <Card className={`border-2 ${getRiskColor(analysisResults.overallRisk)}`}>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-h2 text-neutral-900 flex items-center gap-2">
-              {analysisResults.overallRisk === "High" && <AlertTriangle className="h-6 w-6 text-critical-red" />}
-              {analysisResults.overallRisk === "Medium" && <AlertTriangle className="h-6 w-6 text-alert-orange" />}
-              {analysisResults.overallRisk === "Low" && <CheckCircle className="h-6 w-6 text-health-teal" />}
-              Penilaian Risiko Keseluruhan
+            <CardTitle className="flex items-center gap-2">
+              {analysisResults.overallRisk === "High" && <AlertTriangle className="h-6 w-6" />}
+              {analysisResults.overallRisk === "Medium" && <AlertTriangle className="h-6 w-6" />}
+              {analysisResults.overallRisk === "Low" && <CheckCircle className="h-6 w-6" />}
+              Overall Risk Assessment
             </CardTitle>
-            <Badge variant="outline" className="text-body-sm border-trust-blue text-trust-blue">
-              Kepercayaan: {analysisResults.confidence}%
+            <Badge variant="outline" className="text-sm">
+              Confidence: {analysisResults.confidence}%
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
           <div className="text-center">
-            <div className="text-h1 font-bold mb-2">
-              {analysisResults.overallRisk === "High" && <span className="text-critical-red">Risiko Tinggi</span>}
-              {analysisResults.overallRisk === "Medium" && <span className="text-alert-orange">Risiko Sedang</span>}
-              {analysisResults.overallRisk === "Low" && <span className="text-health-teal">Risiko Rendah</span>}
-            </div>
-            <p className="text-body-sm text-neutral-600">
-              Berdasarkan analisis AI terhadap tanda vital, data EKG, dan pola pernapasan
+            <div className="text-4xl font-bold mb-2">{analysisResults.overallRisk} Risk</div>
+            <p className="text-sm opacity-80">
+              Based on AI analysis of vital signs, ECG data, and respiratory patterns
             </p>
           </div>
         </CardContent>
@@ -160,36 +155,25 @@ export default function AnalysisResultsPage({ params }: { params: { id: string }
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Vital Signs Summary */}
-        <Card className="shadow-soft border-neutral-200">
-          <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
-            <CardTitle className="text-h2 text-neutral-900 flex items-center gap-2">
-              <Heart className="h-5 w-5 text-health-teal" />
-              Ringkasan Tanda Vital
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Heart className="h-5 w-5" />
+              Vital Signs Summary
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6 space-y-4">
+          <CardContent className="space-y-4">
             {Object.entries(analysisResults.vitalSigns).map(([key, vital]) => (
-              <div key={key} className="flex justify-between items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+              <div key={key} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <div>
-                  <p className="text-body font-medium text-neutral-900 capitalize">
-                    {key === "heartRate" && "Detak Jantung"}
-                    {key === "bloodPressure" && "Tekanan Darah"}
-                    {key === "respiratoryRate" && "Laju Pernapasan"}
-                    {key === "spO2" && "Saturasi Oksigen"}
-                    {key === "temperature" && "Suhu Tubuh"}
-                  </p>
-                  <p className="text-body-sm text-neutral-500">Normal: {vital.range}</p>
+                  <p className="font-medium capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</p>
+                  <p className="text-sm text-gray-600">Normal: {vital.range}</p>
                 </div>
                 <div className="text-right">
-                  <p className={`text-h3 font-bold ${getStatusColor(vital.status)}`}>
+                  <p className={`text-lg font-bold ${getStatusColor(vital.status)}`}>
                     {"systolic" in vital ? `${vital.systolic}/${vital.diastolic}` : vital.value} {vital.unit}
                   </p>
-                  <p className={`text-body-sm capitalize ${getStatusColor(vital.status)}`}>
-                    {vital.status === "normal" && "Normal"}
-                    {vital.status === "elevated" && "Tinggi"}
-                    {vital.status === "high" && "Sangat Tinggi"}
-                    {vital.status === "low" && "Rendah"}
-                  </p>
+                  <p className={`text-sm capitalize ${getStatusColor(vital.status)}`}>{vital.status}</p>
                 </div>
               </div>
             ))}
@@ -197,25 +181,25 @@ export default function AnalysisResultsPage({ params }: { params: { id: string }
         </Card>
 
         {/* AI Findings */}
-        <Card className="shadow-soft border-neutral-200">
-          <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
-            <CardTitle className="text-h2 text-neutral-900 flex items-center gap-2">
-              <Activity className="h-5 w-5 text-health-teal" />
-              Temuan Klinis AI
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              AI Clinical Findings
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6 space-y-4">
+          <CardContent className="space-y-4">
             {analysisResults.aiFindings.map((finding, index) => (
-              <div key={index} className="p-3 border border-neutral-200 rounded-lg bg-white">
+              <div key={index} className="p-3 border rounded-lg">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <p className="text-body font-semibold text-neutral-900">{finding.category}</p>
-                    <p className="text-body-sm text-neutral-700">{finding.finding}</p>
+                    <p className="font-medium">{finding.category}</p>
+                    <p className="text-sm text-gray-600">{finding.finding}</p>
                   </div>
                   {getSeverityBadge(finding.severity)}
                 </div>
-                <div className="flex justify-between items-center text-body-sm text-neutral-500">
-                  <span>Kepercayaan: {finding.confidence}%</span>
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <span>Confidence: {finding.confidence}%</span>
                 </div>
               </div>
             ))}
@@ -224,19 +208,17 @@ export default function AnalysisResultsPage({ params }: { params: { id: string }
       </div>
 
       {/* Recommendations */}
-      <Card className="shadow-soft border-neutral-200">
-        <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
-          <CardTitle className="text-h2 text-neutral-900">Rekomendasi & Langkah Selanjutnya</CardTitle>
-          <CardDescription className="text-body text-neutral-600">
-            Rekomendasi yang dibuat AI berdasarkan hasil analisis
-          </CardDescription>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recommendations & Next Steps</CardTitle>
+          <CardDescription>AI-generated recommendations based on analysis results</CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="space-y-3">
             {analysisResults.recommendations.map((recommendation, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <CheckCircle className="h-5 w-5 text-trust-blue mt-0.5 flex-shrink-0" />
-                <p className="text-body-sm text-neutral-800">{recommendation}</p>
+              <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm">{recommendation}</p>
               </div>
             ))}
           </div>
@@ -245,41 +227,26 @@ export default function AnalysisResultsPage({ params }: { params: { id: string }
 
       {/* Specialist Notes */}
       {analysisResults.specialistNotes && (
-        <Card className="shadow-soft border-neutral-200">
-          <CardHeader className="bg-gradient-to-r from-neutral-50 to-yellow-50">
-            <CardTitle className="text-h2 text-neutral-900 flex items-center gap-2">
-              <FileCheck className="h-5 w-5 text-alert-orange" />
-              Catatan Tinjauan Spesialis
-            </CardTitle>
+        <Card>
+          <CardHeader>
+            <CardTitle>Specialist Review Notes</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-body text-neutral-800">{analysisResults.specialistNotes}</p>
+              <p className="text-sm">{analysisResults.specialistNotes}</p>
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-4 pt-4">
-        <EnhancedButton asChild className="bg-health-teal hover:bg-teal-600">
-          <Link href={`/health-worker/patients/${analysisResults.patientId}`}>
-            <User className="mr-2 h-4 w-4" />
-            Lihat Profil Pasien
-          </Link>
-        </EnhancedButton>
-        <EnhancedButton asChild variant="outline">
-          <Link href={`/health-worker/upload?patient=${analysisResults.patientId}`}>
-            <Upload className="mr-2 h-4 w-4" />
-            Upload Data Baru
-          </Link>
-        </EnhancedButton>
-        <EnhancedButton asChild variant="outline">
-          <Link href={`/specialist/patient/${analysisResults.patientId}`}>
-            <ArrowRight className="mr-2 h-4 w-4" />
-            Rujuk ke Spesialis
-          </Link>
-        </EnhancedButton>
+      <div className="flex gap-4 pt-4">
+        <Button asChild className="bg-brand-medical-green hover:bg-brand-medical-green/90">
+          <Link href={`/health-worker/patients/${analysisResults.patientId}`}>View Patient Profile</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href={`/health-worker/upload?patient=${analysisResults.patientId}`}>Upload New Data</Link>
+        </Button>
       </div>
     </div>
   )
