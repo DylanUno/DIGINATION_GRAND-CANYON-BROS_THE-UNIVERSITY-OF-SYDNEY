@@ -84,11 +84,11 @@ const getStatusColor = (status: string) => {
 const getRiskColor = (risk: string) => {
   switch (risk) {
     case "High":
-      return "urgent"
+      return "high-risk"
     case "Medium":
-      return "warning"
+      return "medium-risk"
     case "Low":
-      return "completed"
+      return "low-risk"
     default:
       return "completed"
   }

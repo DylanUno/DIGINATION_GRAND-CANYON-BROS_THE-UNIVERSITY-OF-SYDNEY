@@ -167,7 +167,7 @@ export default function SpecialistPatientDetailPage({ params }: { params: { pati
       <div className="w-80 border-r border-neutral-200 bg-gradient-to-b from-neutral-50 to-white overflow-y-auto">
         <div className="p-4 border-b border-neutral-200">
           <div className="flex items-center gap-2 mb-4">
-            <EnhancedButton asChild variant="outline" size="icon">
+            <EnhancedButton asChild variant="outline" size="icon-sm">
               <Link href="/specialist/dashboard">
                 <ArrowLeft className="h-4 w-4" />
               </Link>
@@ -318,7 +318,7 @@ export default function SpecialistPatientDetailPage({ params }: { params: { pati
                             {key.replace(/([A-Z])/g, " $1").trim()}
                           </span>
                         </div>
-                                                 <TrendIcon trend={vital.trend as "up" | "down" | "stable"} />
+                        <TrendIcon trend={vital.trend as "up" | "down" | "stable"} />
                       </div>
                       <div className="text-h2 font-bold text-neutral-900">
                         {"systolic" in vital ? `${vital.systolic}/${vital.diastolic}` : vital.value}

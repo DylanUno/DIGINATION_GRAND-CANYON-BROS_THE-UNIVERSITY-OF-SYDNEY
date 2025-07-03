@@ -27,7 +27,7 @@ export function HealthWorkerSidebar() {
             </div>
             <span className="text-h3">VitalSense</span>
           </Link>
-          <EnhancedButton variant="ghost" size="icon" className="ml-auto relative">
+          <EnhancedButton variant="ghost" size="icon-sm" className="ml-auto relative">
             <Bell className="h-4 w-4" />
             <StatusIndicator
               status="urgent"

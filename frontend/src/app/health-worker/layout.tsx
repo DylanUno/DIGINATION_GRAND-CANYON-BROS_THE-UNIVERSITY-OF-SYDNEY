@@ -25,7 +25,7 @@ export default function HealthWorkerLayout({
         <header className="flex h-14 items-center gap-4 border-b border-neutral-200 bg-gradient-to-r from-neutral-50 to-white px-4 lg:h-[60px] lg:px-6">
           <Sheet>
             <SheetTrigger asChild>
-              <EnhancedButton variant="outline" size="icon" className="shrink-0 md:hidden">
+              <EnhancedButton variant="outline" size="icon-sm" className="shrink-0 md:hidden">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </EnhancedButton>
@@ -63,7 +63,7 @@ export default function HealthWorkerLayout({
           <div className="w-full flex-1">
             <h1 className="text-h3 font-semibold text-neutral-900">Rural Health Center</h1>
           </div>
-          <EnhancedButton variant="ghost" size="icon" className="relative">
+          <EnhancedButton variant="ghost" size="icon-sm" className="relative">
             <Bell className="h-5 w-5" />
             <StatusIndicator
               status="urgent"

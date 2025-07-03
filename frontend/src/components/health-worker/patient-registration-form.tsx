@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { EnhancedButton } from "@/components/ui/enhanced-button"
+import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -42,6 +42,7 @@ export function PatientRegistrationForm({
     toast({
       title: "Patient Registered Successfully!",
       description: `${data.fullName} has been added to the system.`,
+      className: "bg-brand-medical-green text-white",
     })
     if (onSubmitSuccess) {
       onSubmitSuccess(data)
@@ -51,9 +52,9 @@ export function PatientRegistrationForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Card className="shadow-soft border-neutral-200">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-h2 text-neutral-900">Personal Information</CardTitle>
+            <CardTitle>Personal Information</CardTitle>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-6">
             <FormField
@@ -61,9 +62,9 @@ export function PatientRegistrationForm({
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-body font-medium text-neutral-700">Full Name</FormLabel>
+                  <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                    <Input placeholder="John Doe" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -74,9 +75,9 @@ export function PatientRegistrationForm({
               name="dateOfBirth"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-body font-medium text-neutral-700">Date of Birth</FormLabel>
+                  <FormLabel>Date of Birth</FormLabel>
                   <FormControl>
-                    <Input type="date" className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                    <Input type="date" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -87,10 +88,10 @@ export function PatientRegistrationForm({
               name="gender"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-body font-medium text-neutral-700">Gender</FormLabel>
+                  <FormLabel>Gender</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
                     </FormControl>
@@ -109,9 +110,9 @@ export function PatientRegistrationForm({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-body font-medium text-neutral-700">Phone Number</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input type="tel" placeholder="+62 812 3456 7890" className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                    <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,9 +124,9 @@ export function PatientRegistrationForm({
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-body font-medium text-neutral-700">Address</FormLabel>
+                    <FormLabel>Address</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Jl. Merdeka No. 123, Karimunjawa, Jepara, Jawa Tengah" className="rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                      <Textarea placeholder="123 Main St, City, State, ZIP" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -135,9 +136,9 @@ export function PatientRegistrationForm({
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft border-neutral-200">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-h2 text-neutral-900">Medical Information</CardTitle>
+            <CardTitle>Medical Information</CardTitle>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-6">
             <FormField
@@ -145,11 +146,11 @@ export function PatientRegistrationForm({
               name="weightKg"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-body font-medium text-neutral-700">Weight (kg)</FormLabel>
+                  <FormLabel>Weight (kg)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="70" className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                    <Input type="number" placeholder="70" {...field} />
                   </FormControl>
-                  <FormDescription className="text-body-sm text-neutral-500">For BMI calculation</FormDescription>
+                  <FormDescription>For BMI calculation</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -159,11 +160,11 @@ export function PatientRegistrationForm({
               name="heightCm"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-body font-medium text-neutral-700">Height (cm)</FormLabel>
+                  <FormLabel>Height (cm)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="175" className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                    <Input type="number" placeholder="175" {...field} />
                   </FormControl>
-                  <FormDescription className="text-body-sm text-neutral-500">For BMI calculation</FormDescription>
+                  <FormDescription>For BMI calculation</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -174,9 +175,9 @@ export function PatientRegistrationForm({
                 name="knownMedicalConditions"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-body font-medium text-neutral-700">Known Medical Conditions</FormLabel>
+                    <FormLabel>Known Medical Conditions</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="List any known medical conditions..." className="rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                      <Textarea placeholder="List any known medical conditions..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -189,9 +190,9 @@ export function PatientRegistrationForm({
                 name="allergies"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-body font-medium text-neutral-700">Allergies</FormLabel>
+                    <FormLabel>Allergies</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="List any known allergies..." className="rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                      <Textarea placeholder="List any known allergies..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -201,9 +202,9 @@ export function PatientRegistrationForm({
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft border-neutral-200">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-h2 text-neutral-900">Emergency Contact</CardTitle>
+            <CardTitle>Emergency Contact</CardTitle>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-6">
             <FormField
@@ -211,9 +212,9 @@ export function PatientRegistrationForm({
               name="emergencyContactName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-body font-medium text-neutral-700">Full Name</FormLabel>
+                  <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Jane Doe" className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                    <Input placeholder="Jane Doe" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -224,9 +225,9 @@ export function PatientRegistrationForm({
               name="emergencyContactPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-body font-medium text-neutral-700">Phone Number</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input type="tel" placeholder="+62 812 3456 7890" className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                    <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -237,9 +238,9 @@ export function PatientRegistrationForm({
               name="emergencyContactRelationship"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-body font-medium text-neutral-700">Relationship</FormLabel>
+                  <FormLabel>Relationship</FormLabel>
                   <FormControl>
-                    <Input placeholder="Spouse, Parent, Friend, etc." className="h-12 rounded-lg border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" {...field} />
+                    <Input placeholder="Spouse, Parent, Friend, etc." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -248,17 +249,15 @@ export function PatientRegistrationForm({
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft border-neutral-200">
-          <CardFooter className="pt-6">
-            <EnhancedButton
-              type="submit"
-              size="xl"
-              className="w-full md:w-auto bg-health-teal hover:bg-teal-600"
-            >
-              Register Patient
-            </EnhancedButton>
-          </CardFooter>
-        </Card>
+        <CardFooter>
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full md:w-auto bg-brand-medical-green hover:bg-brand-medical-green/90"
+          >
+            Register Patient
+          </Button>
+        </CardFooter>
       </form>
     </Form>
   )

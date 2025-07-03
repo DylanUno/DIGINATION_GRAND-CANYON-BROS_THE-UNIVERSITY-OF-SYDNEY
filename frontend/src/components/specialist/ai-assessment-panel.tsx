@@ -39,7 +39,9 @@ export function AiAssessmentPanel() {
           <Lightbulb className="mr-2 h-5 w-5" />
           AI Assessment & Insights
         </CardTitle>
-        <CardDescription>Automated analysis and preliminary findings based on submitted data.</CardDescription>
+        <CardDescription>
+          Automated analysis and preliminary findings based on submitted data for specialist review.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className={`p-4 rounded-lg border ${getRiskColor(aiAssessment.overallRisk)}`}>

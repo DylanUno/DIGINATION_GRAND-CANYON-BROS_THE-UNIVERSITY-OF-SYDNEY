@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { EnhancedButton } from "@/components/ui/enhanced-button"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,50 +11,43 @@ import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import { StatusIndicator } from "@/components/ui/status-indicator"
-import { Search, Upload, FileCheck, Video, CheckCircle2, User, Clock, Wifi, WifiOff, AlertCircle, Activity } from "lucide-react"
+import { Search, Upload, FileCheck, Video, CheckCircle2, User, Clock, Wifi, WifiOff, AlertCircle } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 
-// Mock patient data for search - Indonesian context
+// Mock patient data for search
 const mockPatients = [
-  { id: "P001", name: "Ahmad Wijaya", phone: "+62 812 3456 7890", age: 38, lastVisit: "2025-01-02" },
-  { id: "P002", name: "Siti Nurhaliza", phone: "+62 813 4567 8901", age: 29, lastVisit: "2024-12-30" },
-  { id: "P003", name: "Budi Santoso", phone: "+62 814 5678 9012", age: 45, lastVisit: "2024-12-28" },
-  { id: "P004", name: "Dewi Sartika", phone: "+62 815 6789 0123", age: 52, lastVisit: "2024-12-25" },
+  { id: "P001", name: "John Doe", phone: "+1 (555) 123-4567", age: 45, lastVisit: "2024-12-10" },
+  { id: "P002", name: "Mary Smith", phone: "+1 (555) 234-5678", age: 62, lastVisit: "2024-12-08" },
+  { id: "P003", name: "Robert Johnson", phone: "+1 (555) 345-6789", age: 33, lastVisit: "2024-12-05" },
 ]
 
 const chiefComplaints = [
-  "Nyeri dada",
-  "Sesak napas",
-  "Kelelahan",
-  "Pusing",
-  "Jantung berdebar",
-  "Sakit kepala",
-  "Mual",
-  "Demam",
-  "Nyeri perut",
-  "Lainnya",
+  "Chest pain",
+  "Shortness of breath",
+  "Fatigue",
+  "Dizziness",
+  "Palpitations",
+  "Headache",
+  "Nausea",
+  "Other",
 ]
 
 const symptoms = [
-  "Nyeri dada",
-  "Sesak napas",
-  "Kelelahan",
-  "Pusing",
-  "Jantung berdebar",
-  "Sakit kepala",
-  "Mual",
-  "Berkeringat",
-  "Lemas",
-  "Detak jantung tidak teratur",
-  "Bengkak",
-  "Batuk",
-  "Demam",
-  "Nyeri sendi",
-  "Gangguan tidur",
-  "Kehilangan nafsu makan",
-  "Nyeri punggung",
-  "Konstipasi",
+  "Chest pain",
+  "Shortness of breath",
+  "Fatigue",
+  "Dizziness",
+  "Palpitations",
+  "Headache",
+  "Nausea",
+  "Sweating",
+  "Weakness",
+  "Irregular heartbeat",
+  "Swelling",
+  "Cough",
+  "Fever",
+  "Joint pain",
+  "Sleep problems",
 ]
 
 export default function UploadDataPage() {
@@ -89,7 +82,7 @@ export default function UploadDataPage() {
   const [staffNotes, setStaffNotes] = useState("")
   const [isOffline, setIsOffline] = useState(false)
   const [queuePosition, setQueuePosition] = useState(3)
-  const [processingStatus, setProcessingStatus] = useState("Menganalisis tanda vital... Perkiraan waktu: 3 menit")
+  const [processingStatus, setProcessingStatus] = useState("Analyzing vitals... Est. time: 3 minutes")
   const [dataQuality, setDataQuality] = useState({ ecg: 95, video: 88, overall: 92 })
 
   const handleVitalSignChange = (field: string, value: string) => {
@@ -101,16 +94,7 @@ export default function UploadDataPage() {
     // Simulate data quality check
     if (type === "ecgData") {
       setDataQuality((prev) => ({ ...prev, ecg: Math.floor(Math.random() * 20) + 80 }))
-    } else if (type === "video") {
-      setDataQuality((prev) => ({ ...prev, video: Math.floor(Math.random() * 20) + 80 }))
     }
-    // Update overall quality
-    setTimeout(() => {
-      setDataQuality((prev) => ({ 
-        ...prev, 
-        overall: Math.floor((prev.ecg + prev.video) / 2) 
-      }))
-    }, 500)
   }
 
   const handleSymptomToggle = (symptom: string) => {
@@ -135,7 +119,7 @@ export default function UploadDataPage() {
 
   const handleSubmit = async () => {
     if (!selectedPatient) {
-      alert("Silakan pilih pasien terlebih dahulu")
+      alert("Please select a patient first")
       return
     }
 
@@ -148,7 +132,7 @@ export default function UploadDataPage() {
         if (prev >= 100) {
           clearInterval(interval)
           setIsUploading(false)
-          alert("Data berhasil diunggah dan masuk antrian analisis AI!")
+          alert("Data uploaded successfully and queued for AI analysis!")
           return 100
         }
         return prev + 10
@@ -159,18 +143,15 @@ export default function UploadDataPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-display font-bold text-neutral-900">Upload & Pemrosesan Data</h1>
-          <p className="text-body-lg text-neutral-600 mt-2">Unggah data medis untuk analisis AI comprehensive</p>
-        </div>
+        <h1 className="text-2xl font-semibold md:text-3xl text-gray-800">Data Upload & Processing</h1>
         <div className="flex items-center gap-2">
           {isOffline ? (
-            <Badge className="bg-critical-red text-white flex items-center gap-1">
+            <Badge variant="destructive" className="flex items-center gap-1">
               <WifiOff className="h-3 w-3" />
-              Mode Offline
+              Offline Mode
             </Badge>
           ) : (
-            <Badge variant="outline" className="border-health-teal text-health-teal flex items-center gap-1">
+            <Badge variant="outline" className="flex items-center gap-1">
               <Wifi className="h-3 w-3" />
               Online
             </Badge>
@@ -179,46 +160,39 @@ export default function UploadDataPage() {
       </div>
 
       {/* Patient Context */}
-      <Card className="shadow-soft border-neutral-200">
-        <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
-          <CardTitle className="text-h2 text-neutral-900 flex items-center gap-2">
-            <User className="h-5 w-5 text-health-teal" />
-            Konteks Pasien
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Patient Context
           </CardTitle>
-          <CardDescription className="text-body text-neutral-600">
-            Pilih pasien, verifikasi identitas, dan tinjau riwayat medis
-          </CardDescription>
+          <CardDescription>Select patient, verify identity, and review medical history</CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-2.5 top-3 h-4 w-4 text-neutral-500" />
-              <Input 
-                type="search" 
-                placeholder="Cari berdasarkan nama, telepon, atau ID pasien..." 
-                className="pl-8 h-12 border-neutral-300 focus:border-trust-blue focus:ring-trust-blue" 
-              />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input type="search" placeholder="Search by name, phone, or patient ID..." className="pl-8" />
             </div>
             <div className="grid gap-2">
               {mockPatients.map((patient) => (
                 <div
                   key={patient.id}
                   onClick={() => setSelectedPatient(patient)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                     selectedPatient?.id === patient.id
-                      ? "border-trust-blue bg-trust-blue/5"
-                      : "border-neutral-200 hover:border-neutral-300"
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-body font-semibold text-neutral-900">{patient.name}</p>
-                      <p className="text-body-sm text-neutral-600">
-                        {patient.id} • Usia: {patient.age} • Kunjungan terakhir: {patient.lastVisit}
+                      <p className="font-medium">{patient.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {patient.id} • Age: {patient.age} • Last visit: {patient.lastVisit}
                       </p>
-                      <p className="text-body-sm text-neutral-500">{patient.phone}</p>
                     </div>
-                    {selectedPatient?.id === patient.id && <CheckCircle2 className="h-5 w-5 text-trust-blue" />}
+                    {selectedPatient?.id === patient.id && <CheckCircle2 className="h-5 w-5 text-primary" />}
                   </div>
                 </div>
               ))}
@@ -226,13 +200,13 @@ export default function UploadDataPage() {
 
             {selectedPatient && (
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="text-body font-semibold text-neutral-900 mb-2">Ringkasan Riwayat Medis</h4>
-                <p className="text-body-sm text-neutral-700">
-                  Kondisi sebelumnya: Hipertensi, Diabetes Tipe 2
+                <h4 className="font-medium mb-2">Medical History Summary</h4>
+                <p className="text-sm text-gray-600">
+                  Previous conditions: Hypertension, Type 2 Diabetes
                   <br />
-                  Obat saat ini: Lisinopril 10mg, Metformin 500mg
+                  Current medications: Lisinopril 10mg, Metformin 500mg
                   <br />
-                  Alergi: Penisilin, Udang
+                  Allergies: Penicillin
                 </p>
               </div>
             )}
@@ -243,14 +217,12 @@ export default function UploadDataPage() {
       {selectedPatient && (
         <>
           {/* Data Upload Section */}
-          <Card className="shadow-soft border-neutral-200">
-            <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
-              <CardTitle className="text-h2 text-neutral-900">Bagian Upload Data</CardTitle>
-              <CardDescription className="text-body text-neutral-600">
-                Unggah file tanda vital dengan validasi real-time
-              </CardDescription>
+          <Card>
+            <CardHeader>
+              <CardTitle>Data Upload Section</CardTitle>
+              <CardDescription>Upload vital sign files with real-time validation</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="space-y-6">
               {/* Data Validation Alerts */}
               <div className="grid gap-4 md:grid-cols-3">
                 <div
@@ -260,7 +232,7 @@ export default function UploadDataPage() {
                     <div
                       className={`w-3 h-3 rounded-full ${dataQuality.ecg >= 90 ? "bg-green-500" : "bg-yellow-500"}`}
                     ></div>
-                    <span className="text-body-sm font-medium text-neutral-900">Kualitas EKG: {dataQuality.ecg}%</span>
+                    <span className="text-sm font-medium">ECG Quality: {dataQuality.ecg}%</span>
                   </div>
                 </div>
                 <div
@@ -270,7 +242,7 @@ export default function UploadDataPage() {
                     <div
                       className={`w-3 h-3 rounded-full ${dataQuality.video >= 90 ? "bg-green-500" : "bg-yellow-500"}`}
                     ></div>
-                    <span className="text-body-sm font-medium text-neutral-900">Kualitas Video: {dataQuality.video}%</span>
+                    <span className="text-sm font-medium">Video Quality: {dataQuality.video}%</span>
                   </div>
                 </div>
                 <div
@@ -280,7 +252,7 @@ export default function UploadDataPage() {
                     <div
                       className={`w-3 h-3 rounded-full ${dataQuality.overall >= 90 ? "bg-green-500" : "bg-yellow-500"}`}
                     ></div>
-                    <span className="text-body-sm font-medium text-neutral-900">Keseluruhan: {dataQuality.overall}%</span>
+                    <span className="text-sm font-medium">Overall: {dataQuality.overall}%</span>
                   </div>
                 </div>
               </div>
@@ -288,10 +260,10 @@ export default function UploadDataPage() {
               {/* File Upload Areas */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label className="text-body font-medium text-neutral-900">File Data EKG (.dat)</Label>
-                  <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-neutral-400 transition-colors">
-                    <Upload className="h-8 w-8 text-neutral-400 mx-auto mb-2" />
-                    <p className="text-body-sm text-neutral-600 mb-2">Seret & letakkan file .dat di sini, atau klik untuk menjelajahi</p>
+                  <Label>ECG Data File (.dat)</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-2">Drag & drop your .dat file here, or click to browse</p>
                     <Input
                       type="file"
                       accept=".dat"
@@ -302,24 +274,24 @@ export default function UploadDataPage() {
                         if (file) handleFileUpload("ecgData", file)
                       }}
                     />
-                    <EnhancedButton variant="outline" size="sm" onClick={() => document.getElementById("ecg-data")?.click()}>
-                      Pilih File
-                    </EnhancedButton>
+                    <Button variant="outline" size="sm" onClick={() => document.getElementById("ecg-data")?.click()}>
+                      Choose File
+                    </Button>
                     {uploadedFiles.ecgData && (
-                      <div className="mt-2 flex items-center justify-center gap-2 text-health-teal">
+                      <div className="mt-2 flex items-center justify-center gap-2 text-brand-medical-green">
                         <FileCheck className="h-4 w-4" />
-                        <span className="text-body-sm">{uploadedFiles.ecgData.name}</span>
+                        <span className="text-sm">{uploadedFiles.ecgData.name}</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-body-sm text-neutral-500">Ukuran maksimal file: 50MB</p>
+                  <p className="text-xs text-gray-500">Max file size: 50MB</p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-body font-medium text-neutral-900">File Header EKG (.hea)</Label>
-                  <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-neutral-400 transition-colors">
-                    <Upload className="h-8 w-8 text-neutral-400 mx-auto mb-2" />
-                    <p className="text-body-sm text-neutral-600 mb-2">Seret & letakkan file .hea di sini, atau klik untuk menjelajahi</p>
+                  <Label>ECG Header File (.hea)</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-2">Drag & drop your .hea file here, or click to browse</p>
                     <Input
                       type="file"
                       accept=".hea"
@@ -330,17 +302,17 @@ export default function UploadDataPage() {
                         if (file) handleFileUpload("ecgHeader", file)
                       }}
                     />
-                    <EnhancedButton variant="outline" size="sm" onClick={() => document.getElementById("ecg-header")?.click()}>
-                      Pilih File
-                    </EnhancedButton>
+                    <Button variant="outline" size="sm" onClick={() => document.getElementById("ecg-header")?.click()}>
+                      Choose File
+                    </Button>
                     {uploadedFiles.ecgHeader && (
-                      <div className="mt-2 flex items-center justify-center gap-2 text-health-teal">
+                      <div className="mt-2 flex items-center justify-center gap-2 text-brand-medical-green">
                         <FileCheck className="h-4 w-4" />
-                        <span className="text-body-sm">{uploadedFiles.ecgHeader.name}</span>
+                        <span className="text-sm">{uploadedFiles.ecgHeader.name}</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-body-sm text-neutral-500">Ukuran maksimal file: 5MB</p>
+                  <p className="text-xs text-gray-500">Max file size: 5MB</p>
                 </div>
               </div>
 
@@ -348,32 +320,31 @@ export default function UploadDataPage() {
 
               {/* Video Recording/Upload */}
               <div className="space-y-4">
-                <Label className="text-body font-medium text-neutral-900">Perekaman Video Langsung atau Upload</Label>
+                <Label>Live Video Recording or Upload</Label>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center">
-                    <Video className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                    <p className="text-body-sm text-neutral-600 mb-4">Rekam video langsung (timer 2 menit)</p>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <Video className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-sm text-gray-600 mb-4">Record live video (2-minute timer)</p>
                     {!isRecording ? (
-                      <EnhancedButton onClick={startRecording} className="mb-2 bg-trust-blue hover:bg-blue-600">
-                        <Video className="h-4 w-4 mr-2" />
-                        Mulai Rekam
-                      </EnhancedButton>
+                      <Button onClick={startRecording} className="mb-2">
+                        Start Recording
+                      </Button>
                     ) : (
                       <div className="space-y-2">
-                        <div className="text-h3 font-bold text-critical-red">
+                        <div className="text-lg font-bold text-red-500">
                           {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, "0")}
                         </div>
                         <Progress value={(recordingTime / 120) * 100} className="w-full" />
-                        <EnhancedButton variant="outline" onClick={() => setIsRecording(false)} className="border-critical-red text-critical-red">
-                          Hentikan Rekam
-                        </EnhancedButton>
+                        <Button variant="destructive" onClick={() => setIsRecording(false)}>
+                          Stop Recording
+                        </Button>
                       </div>
                     )}
                   </div>
 
-                  <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center">
-                    <Video className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                    <p className="text-body-sm text-neutral-600 mb-4">Atau unggah file video</p>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <Video className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-sm text-gray-600 mb-4">Or upload video file</p>
                     <Input
                       type="file"
                       accept=".mp4,.mov,.avi"
@@ -384,13 +355,13 @@ export default function UploadDataPage() {
                         if (file) handleFileUpload("video", file)
                       }}
                     />
-                    <EnhancedButton variant="outline" onClick={() => document.getElementById("video-upload")?.click()}>
-                      Pilih File Video
-                    </EnhancedButton>
+                    <Button variant="outline" onClick={() => document.getElementById("video-upload")?.click()}>
+                      Choose Video File
+                    </Button>
                     {uploadedFiles.video && (
-                      <div className="mt-4 flex items-center justify-center gap-2 text-health-teal">
+                      <div className="mt-4 flex items-center justify-center gap-2 text-brand-medical-green">
                         <FileCheck className="h-4 w-4" />
-                        <span className="text-body-sm">{uploadedFiles.video.name}</span>
+                        <span className="text-sm">{uploadedFiles.video.name}</span>
                       </div>
                     )}
                   </div>
@@ -400,20 +371,18 @@ export default function UploadDataPage() {
           </Card>
 
           {/* Symptoms & Context Section */}
-          <Card className="shadow-soft border-neutral-200">
-            <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
-              <CardTitle className="text-h2 text-neutral-900">Bagian Gejala & Konteks</CardTitle>
-              <CardDescription className="text-body text-neutral-600">
-                Penilaian gejala detail dan konteks klinis
-              </CardDescription>
+          <Card>
+            <CardHeader>
+              <CardTitle>Symptoms & Context Section</CardTitle>
+              <CardDescription>Detailed symptom assessment and clinical context</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="chief-complaint" className="text-body font-medium text-neutral-900">Keluhan Utama</Label>
+                  <Label htmlFor="chief-complaint">Chief Complaint</Label>
                   <Select value={chiefComplaint} onValueChange={setChiefComplaint}>
-                    <SelectTrigger className="h-12 border-neutral-300 focus:border-trust-blue focus:ring-trust-blue">
-                      <SelectValue placeholder="Pilih keluhan utama" />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select primary complaint" />
                     </SelectTrigger>
                     <SelectContent>
                       {chiefComplaints.map((complaint) => (
@@ -426,124 +395,115 @@ export default function UploadDataPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="symptom-duration" className="text-body font-medium text-neutral-900">Durasi Gejala</Label>
+                  <Label htmlFor="symptom-duration">Symptom Duration</Label>
                   <Input
                     id="symptom-duration"
-                    placeholder="contoh: 3 hari, 2 minggu"
+                    placeholder="e.g., 3 days, 2 weeks"
                     value={symptomDuration}
                     onChange={(e) => setSymptomDuration(e.target.value)}
-                    className="h-12 border-neutral-300 focus:border-trust-blue focus:ring-trust-blue"
                   />
                 </div>
               </div>
 
               <div>
-                <Label className="text-body font-medium text-neutral-900">Daftar Periksa Gejala</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                <Label>Symptoms Checklist</Label>
+                <div className="grid grid-cols-3 gap-2 mt-2">
                   {symptoms.map((symptom) => (
-                    <label key={symptom} className="flex items-center space-x-2 cursor-pointer">
+                    <label key={symptom} className="flex items-center space-x-2">
                       <input
                         type="checkbox"
                         checked={selectedSymptoms.includes(symptom)}
                         onChange={() => handleSymptomToggle(symptom)}
-                        className="rounded border-neutral-300 text-trust-blue focus:ring-trust-blue"
+                        className="rounded border-gray-300"
                       />
-                      <span className="text-body-sm text-neutral-700">{symptom}</span>
+                      <span className="text-sm">{symptom}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
               <div>
-                <Label className="text-body font-medium text-neutral-900">Skala Nyeri (0-10)</Label>
-                <div className="mt-4 space-y-3">
-                  <Slider 
-                    value={painScale} 
-                    onValueChange={setPainScale} 
-                    max={10} 
-                    min={0} 
-                    step={1} 
-                    className="w-full" 
-                  />
-                  <div className="flex justify-between text-body-sm text-neutral-500">
-                    <span>Tidak nyeri (0)</span>
-                    <span className="font-medium text-neutral-900">Saat ini: {painScale[0]}</span>
-                    <span>Nyeri berat (10)</span>
+                <Label>Pain Scale (1-10)</Label>
+                <div className="mt-2 space-y-2">
+                  <Slider value={painScale} onValueChange={setPainScale} max={10} min={0} step={1} className="w-full" />
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>No pain (0)</span>
+                    <span className="font-medium">Current: {painScale[0]}</span>
+                    <span>Severe pain (10)</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="staff-notes" className="text-body font-medium text-neutral-900">Catatan Petugas</Label>
+                <Label htmlFor="staff-notes">Staff Notes</Label>
                 <Textarea
                   id="staff-notes"
-                  placeholder="Observasi tambahan, perilaku pasien, faktor lingkungan..."
+                  placeholder="Additional observations, patient behavior, environmental factors..."
                   value={staffNotes}
                   onChange={(e) => setStaffNotes(e.target.value)}
-                  className="min-h-[100px] mt-2 border-neutral-300 focus:border-trust-blue focus:ring-trust-blue"
+                  className="min-h-[100px]"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Processing & Monitoring */}
-          <Card className="shadow-soft border-neutral-200">
-            <CardHeader className="bg-gradient-to-r from-neutral-50 to-blue-50">
-              <CardTitle className="text-h2 text-neutral-900 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-health-teal" />
-                Pemrosesan & Monitoring
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Processing & Monitoring
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="space-y-6">
               {/* Real-Time Status */}
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="text-body font-semibold text-neutral-900 mb-2 flex items-center gap-2">
-                  <div className="w-3 h-3 bg-trust-blue rounded-full animate-pulse"></div>
-                  Status Real-Time
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                  Real-Time Status
                 </h4>
-                <p className="text-body-sm text-neutral-700">{processingStatus}</p>
+                <p className="text-sm text-gray-700">{processingStatus}</p>
               </div>
 
               {/* Queue Visibility */}
               <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <h4 className="text-body font-semibold text-neutral-900 mb-2">Visibilitas Antrian</h4>
-                <p className="text-body-sm text-neutral-700">
-                  Pasien Anda adalah #{queuePosition} dalam antrian review spesialis.
+                <h4 className="font-medium mb-2">Queue Visibility</h4>
+                <p className="text-sm text-gray-700">
+                  Your patient is #{queuePosition} in the specialist review queue.
                 </p>
               </div>
 
               {/* Offline Mode Support */}
               {isOffline && (
                 <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <h4 className="text-body font-semibold text-neutral-900 mb-2 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-alert-orange" />
-                    Mode Offline Aktif
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-orange-600" />
+                    Offline Mode Active
                   </h4>
-                  <p className="text-body-sm text-neutral-700">
-                    Pengumpulan data berlanjut offline. Akan sinkronisasi otomatis saat koneksi pulih.
+                  <p className="text-sm text-gray-700">
+                    Data collection continues offline. Will sync automatically when connection is restored.
                   </p>
                 </div>
               )}
 
               {isUploading && (
                 <div className="space-y-2">
-                  <div className="flex justify-between text-body-sm text-neutral-700">
-                    <span>Mengunggah dan memproses...</span>
+                  <div className="flex justify-between text-sm">
+                    <span>Uploading and processing...</span>
                     <span>{uploadProgress}%</span>
                   </div>
                   <Progress value={uploadProgress} className="w-full" />
                 </div>
               )}
 
-              <EnhancedButton
+              <Button
                 onClick={handleSubmit}
                 disabled={isUploading || !selectedPatient}
-                className="w-full bg-health-teal hover:bg-teal-600"
-                size="full"
+                className="w-full bg-brand-medical-green hover:bg-brand-medical-green/90"
+                size="lg"
               >
-                <Activity className="h-4 w-4 mr-2" />
-                {isUploading ? "Memproses..." : "Kirim untuk Analisis AI"}
-              </EnhancedButton>
+                {isUploading ? "Processing..." : "Submit for AI Analysis"}
+              </Button>
             </CardContent>
           </Card>
         </>
