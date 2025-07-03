@@ -1,7 +1,12 @@
-# Frontend Dependencies (Next.js)
-frontend/node_modules
+# Dependencies
+node_modules/
+*/node_modules/
+frontend/node_modules/
 frontend/.pnp
 frontend/.pnp.js
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # Testing
 frontend/coverage
@@ -42,6 +47,11 @@ backend/env/
 backend/ENV/
 backend/env.bak/
 backend/venv.bak/
+backend_venv/
+*_venv/
+venv/
+env/
+ENV/
 
 # Backend uploads and temporary files
 backend/uploads/
@@ -55,6 +65,20 @@ backend/*.avi
 # Misc
 .DS_Store
 *.pem
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+out/
+*.tgz
+*.tar.gz
+
+# Cache directories
+.cache/
+*.cache
+.parcel-cache/
+.next/cache/
 
 # Node
 npm-debug.log*
