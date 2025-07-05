@@ -1,7 +1,23 @@
 {
+  "name": "vitalsense-pro-fullstack",
+  "version": "1.0.0",
+  "description": "AI-Powered Multi-Modal Health Analysis Platform",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && python main.py",
+    "build": "cd frontend && npm run build",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && python main.py",
+    "install:all": "cd frontend && npm install && cd ../backend && pip install -r requirements.txt"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "react-hook-form": "^7.59.0",
     "zod": "^3.25.70"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
   }
 }
