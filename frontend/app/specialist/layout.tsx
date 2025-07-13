@@ -1,7 +1,11 @@
+"use client"
+
 import type React from "react"
 import Link from "next/link"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { HeartPulse, LogOut, Users } from "lucide-react"
+import { SpecialistName } from "@/components/specialist/specialist-header"
+import { logout } from "@/lib/client-auth"
 
 export default function SpecialistDashboardLayout({
   children,
@@ -37,8 +41,13 @@ export default function SpecialistDashboardLayout({
               <Users className="w-4 h-4 mr-2" />
               Medical Specialist
             </div>
-            <span className="text-body text-neutral-700 hidden sm:inline">Dr. Emily Carter</span>
-            <EnhancedButton variant="ghost" size="icon-sm" className="text-neutral-600 hover:text-neutral-900">
+            <SpecialistName />
+            <EnhancedButton 
+              variant="ghost" 
+              size="icon-sm" 
+              className="text-neutral-600 hover:text-neutral-900"
+              onClick={logout}
+            >
               <LogOut className="h-4 w-4" />
               <span className="sr-only">Sign Out</span>
             </EnhancedButton>

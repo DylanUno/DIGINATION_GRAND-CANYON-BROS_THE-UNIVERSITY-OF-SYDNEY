@@ -27,37 +27,40 @@ import {
   Heart,
   Thermometer,
 } from "lucide-react"
+import { getCurrentUserId } from "@/lib/client-auth"
+interface Patient {
+  patient_id: string
+  full_name: string
+  date_of_birth: string
+  phone_number: string
+  age: number
+  conditions: string[]
+  medications: string[]
+  allergies: string[]
+}
 
-// Mock patient data
-const mockPatients = [
-  {
-    id: "P001",
-    name: "John Doe",
-    age: 45,
-    phone: "+62 812-3456-7890",
-    conditions: ["Hypertension", "Type 2 Diabetes"],
-    medications: ["Lisinopril 10mg", "Metformin 500mg"],
-    allergies: ["Penicillin"],
-  },
-  {
-    id: "P002",
-    name: "Mary Smith",
-    age: 62,
-    phone: "+62 813-4567-8901",
-    conditions: ["Heart Disease", "High Cholesterol"],
-    medications: ["Atorvastatin 20mg", "Aspirin 81mg"],
-    allergies: ["Sulfa drugs"],
-  },
-  {
-    id: "P003",
-    name: "Robert Johnson",
-    age: 33,
-    phone: "+62 814-5678-9012",
-    conditions: ["Asthma"],
-    medications: ["Albuterol inhaler"],
-    allergies: ["None known"],
-  },
-]
+async function fetchPatients(): Promise<Patient[]> {
+  try {
+    const userId = getCurrentUserId()
+    if (!userId) {
+      console.error('No user ID found in session')
+      return []
+    }
+    
+    const response = await fetch('/api/health-worker/patients', {
+      headers: {
+        'x-user-id': userId // Get actual logged-in user ID
+      }
+    })
+    if (!response.ok) {
+      throw new Error('Failed to fetch patients')
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching patients:', error)
+    return []
+  }
+}
 
 const chiefComplaints = [
   "Chest pain",
@@ -90,7 +93,9 @@ const commonSymptoms = [
 ]
 
 export default function DataUploadPage() {
-  const [selectedPatient, setSelectedPatient] = useState<any>(null)
+  const [patients, setPatients] = useState<Patient[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [uploadedFiles, setUploadedFiles] = useState({
     datFile: null as File | null,
@@ -109,12 +114,22 @@ export default function DataUploadPage() {
   const [processingStatus, setProcessingStatus] = useState("")
   const [queuePosition, setQueuePosition] = useState(3)
 
-  const filteredPatients = mockPatients.filter(
-    (patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm),
+  const filteredPatients = patients.filter(
+    (patient: Patient) =>
+      patient.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.patient_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.phone_number.includes(searchTerm),
   )
+
+  useEffect(() => {
+    async function loadPatients() {
+      setLoading(true)
+      const patientsData = await fetchPatients()
+      setPatients(patientsData)
+      setLoading(false)
+    }
+    loadPatients()
+  }, [])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -199,27 +214,33 @@ export default function DataUploadPage() {
           </div>
 
           <div className="grid gap-2 max-h-60 overflow-y-auto">
-            {filteredPatients.map((patient) => (
-              <div
-                key={patient.id}
-                onClick={() => setSelectedPatient(patient)}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                  selectedPatient?.id === patient.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">{patient.name}</p>
-                    <p className="text-sm text-gray-600">
-                      {patient.id} • Age: {patient.age} • {patient.phone}
-                    </p>
+            {loading ? (
+              <div className="p-4 text-center text-gray-500">Loading patients...</div>
+            ) : filteredPatients.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">No patients found</div>
+            ) : (
+              filteredPatients.map((patient: Patient) => (
+                <div
+                  key={patient.patient_id}
+                  onClick={() => setSelectedPatient(patient)}
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                    selectedPatient?.patient_id === patient.patient_id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">{patient.full_name}</p>
+                      <p className="text-sm text-gray-600">
+                        {patient.patient_id} • Age: {patient.age} • {patient.phone_number}
+                      </p>
+                    </div>
+                    {selectedPatient?.patient_id === patient.patient_id && <CheckCircle className="h-5 w-5 text-blue-600" />}
                   </div>
-                  {selectedPatient?.id === patient.id && <CheckCircle className="h-5 w-5 text-blue-600" />}
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {selectedPatient && (

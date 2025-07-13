@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { Home, FileText, Clock, Download, LogOut, HeartPulse } from "lucide-react"
+import { logout } from "@/lib/client-auth"
 
 const navItems = [
   { href: "/patient/dashboard", label: "Dashboard", icon: Home },
   { href: "/patient/results", label: "Latest Results", icon: FileText },
-  { href: "/patient/medical-history", label: "Medical History", icon: Clock },
-  { href: "/patient/reports", label: "Health Reports", icon: Download },
+  { href: "/patient/medical-history", label: "History & Reports", icon: Clock },
 ]
 
 export function PatientSidebar() {
@@ -45,7 +45,12 @@ export function PatientSidebar() {
           </nav>
         </div>
         <div className="mt-auto p-4 border-t border-neutral-200">
-          <EnhancedButton variant="ghost" size="sm" className="w-full justify-start text-neutral-600">
+          <EnhancedButton 
+            variant="ghost" 
+            size="sm" 
+            className="w-full justify-start text-neutral-600"
+            onClick={logout}
+          >
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
           </EnhancedButton>

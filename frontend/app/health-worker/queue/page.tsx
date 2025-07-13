@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -9,60 +9,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Search, Eye, RefreshCw, Clock, CheckCircle, AlertTriangle, Loader } from "lucide-react"
 import Link from "next/link"
+import { getCurrentUserId } from "@/lib/client-auth"
 
-// Mock queue data
-const queueData = [
-  {
-    id: "Q001",
-    patientName: "John Doe",
-    patientId: "P001",
-    uploadTime: "2025-01-03 14:30",
-    status: "Processing",
-    aiRiskLevel: null,
-    estimatedCompletion: "2025-01-03 15:00",
-    progress: 65,
-  },
-  {
-    id: "Q002",
-    patientName: "Mary Smith",
-    patientId: "P002",
-    uploadTime: "2025-01-03 13:45",
-    status: "Completed",
-    aiRiskLevel: "Medium",
-    estimatedCompletion: "2025-01-03 14:15",
-    progress: 100,
-  },
-  {
-    id: "Q003",
-    patientName: "Robert Johnson",
-    patientId: "P003",
-    uploadTime: "2025-01-03 13:20",
-    status: "Urgent Review",
-    aiRiskLevel: "High",
-    estimatedCompletion: "2025-01-03 13:50",
-    progress: 100,
-  },
-  {
-    id: "Q004",
-    patientName: "Sarah Wilson",
-    patientId: "P004",
-    uploadTime: "2025-01-03 12:15",
-    status: "Completed",
-    aiRiskLevel: "Low",
-    estimatedCompletion: "2025-01-03 12:45",
-    progress: 100,
-  },
-  {
-    id: "Q005",
-    patientName: "Michael Brown",
-    patientId: "P005",
-    uploadTime: "2025-01-03 11:30",
-    status: "Processing",
-    aiRiskLevel: null,
-    estimatedCompletion: "2025-01-03 12:00",
-    progress: 25,
-  },
-]
+interface QueueItem {
+  id: string
+  patientName: string
+  patientId: string
+  uploadTime: string
+  status: string
+  aiRiskLevel: string | null
+  estimatedCompletion: string | null
+  progress: number
+}
+
+async function fetchQueueData(): Promise<QueueItem[]> {
+  try {
+    const userId = getCurrentUserId()
+    if (!userId) {
+      console.error('No user ID found in session')
+      return []
+    }
+    
+    const response = await fetch('/api/health-worker/queue', {
+      headers: {
+        'x-user-id': userId // Get actual logged-in user ID
+      }
+    })
+    if (!response.ok) {
+      throw new Error('Failed to fetch queue data')
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching queue data:', error)
+    return []
+  }
+}
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -114,8 +95,21 @@ const getRiskBadge = (riskLevel: string | null) => {
 }
 
 export default function PatientQueuePage() {
+  const [queueData, setQueueData] = useState<QueueItem[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
+
+  useEffect(() => {
+    async function loadQueueData() {
+      setLoading(true)
+      const data = await fetchQueueData()
+      setQueueData(data)
+      setLoading(false)
+    }
+    
+    loadQueueData()
+  }, [])
 
   const filteredData = queueData.filter((item) => {
     const matchesSearch =
@@ -135,11 +129,29 @@ export default function PatientQueuePage() {
     return queueData.filter((item) => item.status === status).length
   }
 
+  const handleRefresh = async () => {
+    setLoading(true)
+    const data = await fetchQueueData()
+    setQueueData(data)
+    setLoading(false)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-neutral-600">Loading queue data...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold md:text-3xl text-gray-800">Patient Analysis Queue</h1>
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" onClick={handleRefresh}>
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
@@ -222,50 +234,60 @@ export default function PatientQueuePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredData.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{item.patientName}</div>
-                          <div className="text-sm text-gray-500">{item.patientId}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">{item.uploadTime}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(item.status)}
-                          {getStatusBadge(item.status)}
-                        </div>
-                      </TableCell>
-                      <TableCell>{getRiskBadge(item.aiRiskLevel)}</TableCell>
-                      <TableCell className="hidden lg:table-cell text-sm">{item.estimatedCompletion}</TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-primary h-2 rounded-full transition-all"
-                              style={{ width: `${item.progress}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-gray-500">{item.progress}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {item.status === "Completed" || item.status === "Urgent Review" ? (
-                          <Button asChild size="sm" variant="outline">
-                            <Link href={`/health-worker/queue/${item.id}/results`}>
-                              <Eye className="h-3 w-3 mr-1" />
-                              View Results
-                            </Link>
-                          </Button>
-                        ) : (
-                          <Button size="sm" variant="outline" disabled>
-                            Processing...
-                          </Button>
-                        )}
+                  {filteredData.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+                        No queue items found
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    filteredData.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{item.patientName}</div>
+                            <div className="text-sm text-gray-500">{item.patientId}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">{item.uploadTime}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(item.status)}
+                            {getStatusBadge(item.status)}
+                          </div>
+                        </TableCell>
+                        <TableCell>{getRiskBadge(item.aiRiskLevel)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">
+                          {item.estimatedCompletion || 'N/A'}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-primary h-2 rounded-full transition-all"
+                                style={{ width: `${item.progress}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-gray-500">{item.progress}%</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {item.status === "Completed" || item.status === "Urgent Review" ? (
+                            <Button asChild size="sm" variant="outline">
+                              <Link href={`/health-worker/queue/${item.id}/results`}>
+                                <Eye className="h-3 w-3 mr-1" />
+                                View Results
+                              </Link>
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="outline" disabled>
+                              Processing...
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TabsContent>

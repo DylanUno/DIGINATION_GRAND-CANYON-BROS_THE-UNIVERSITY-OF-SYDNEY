@@ -1,3 +1,6 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -5,46 +8,41 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { StatusIndicator } from "@/components/ui/status-indicator"
 import { Search, UserPlus, Eye, Upload, Users } from "lucide-react"
 import Link from "next/link"
+import { getCurrentUserId } from "@/lib/client-auth"
 
-// Mock patient data
-const patients = [
-  {
-    id: "P001",
-    name: "John Doe",
-    age: 45,
-    gender: "Male",
-    phone: "+1 (555) 123-4567",
-    lastVisit: "2025-01-02",
-    status: "Active",
-  },
-  {
-    id: "P002",
-    name: "Mary Smith",
-    age: 62,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    lastVisit: "2025-01-01",
-    status: "Pending Review",
-  },
-  {
-    id: "P003",
-    name: "Robert Johnson",
-    age: 33,
-    gender: "Male",
-    phone: "+1 (555) 345-6789",
-    lastVisit: "2024-12-28",
-    status: "Active",
-  },
-  {
-    id: "P004",
-    name: "Sarah Wilson",
-    age: 28,
-    gender: "Female",
-    phone: "+1 (555) 456-7890",
-    lastVisit: "2024-12-25",
-    status: "Inactive",
-  },
-]
+interface Patient {
+  patient_id: string
+  full_name: string
+  date_of_birth: string
+  gender: string
+  phone_number: string
+  last_screening_date?: string | null
+  status: string
+  age: number
+}
+
+async function fetchPatients(): Promise<Patient[]> {
+  try {
+    const userId = getCurrentUserId()
+    if (!userId) {
+      console.error('No user ID found in session')
+      return []
+    }
+    
+    const response = await fetch('/api/health-worker/patients-list', {
+      headers: {
+        'x-user-id': userId // Get actual logged-in user ID
+      }
+    })
+    if (!response.ok) {
+      throw new Error('Failed to fetch patients')
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching patients:', error)
+    return []
+  }
+}
 
 const getStatusIndicator = (status: string) => {
   switch (status) {
@@ -60,6 +58,62 @@ const getStatusIndicator = (status: string) => {
 }
 
 export default function PatientsPage() {
+  const [patients, setPatients] = useState<Patient[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadPatients() {
+      setLoading(true)
+      
+      // Check if user is authenticated
+      const userId = getCurrentUserId()
+      if (!userId) {
+        console.error('No user ID found, redirecting to login')
+        window.location.href = '/auth/login/health-worker'
+        return
+      }
+      
+      const patientsData = await fetchPatients()
+      setPatients(patientsData)
+      setLoading(false)
+    }
+    
+    loadPatients()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-neutral-600">Loading patients...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (patients.length === 0 && !loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Failed to load patients</p>
+          <p className="text-gray-600 mb-4">This might be due to authentication issues.</p>
+          <div className="space-y-2">
+            <EnhancedButton onClick={() => window.location.reload()} className="mr-2">
+              Try Again
+            </EnhancedButton>
+            <EnhancedButton 
+              variant="outline" 
+              onClick={() => window.location.href = '/auth/login/health-worker'}
+            >
+              Go to Login
+            </EnhancedButton>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -114,25 +168,27 @@ export default function PatientsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {patients.map((patient) => (
-                <TableRow key={patient.id} className="hover:bg-neutral-50">
-                  <TableCell className="font-medium text-body text-neutral-900">{patient.id}</TableCell>
-                  <TableCell className="text-body text-neutral-900">{patient.name}</TableCell>
+              {patients.map((patient: Patient) => (
+                <TableRow key={patient.patient_id} className="hover:bg-neutral-50">
+                  <TableCell className="font-medium text-body text-neutral-900">{patient.patient_id}</TableCell>
+                  <TableCell className="text-body text-neutral-900">{patient.full_name}</TableCell>
                   <TableCell className="text-body text-neutral-700">{patient.age}</TableCell>
                   <TableCell className="text-body text-neutral-700">{patient.gender}</TableCell>
-                  <TableCell className="hidden md:table-cell text-body text-neutral-700">{patient.phone}</TableCell>
-                  <TableCell className="hidden lg:table-cell text-body text-neutral-700">{patient.lastVisit}</TableCell>
+                  <TableCell className="hidden md:table-cell text-body text-neutral-700">{patient.phone_number}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-body text-neutral-700">
+                    {patient.last_screening_date || 'Never'}
+                  </TableCell>
                   <TableCell>{getStatusIndicator(patient.status)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <EnhancedButton asChild size="sm" variant="outline">
-                        <Link href={`/health-worker/patients/${patient.id}`}>
+                        <Link href={`/health-worker/patients/${patient.patient_id}`}>
                           <Eye className="h-3 w-3 mr-1" />
                           View
                         </Link>
                       </EnhancedButton>
                       <EnhancedButton asChild size="sm" variant="outline">
-                        <Link href={`/health-worker/upload?patient=${patient.id}`}>
+                        <Link href={`/health-worker/upload?patient=${patient.patient_id}`}>
                           <Upload className="h-3 w-3 mr-1" />
                           Upload
                         </Link>

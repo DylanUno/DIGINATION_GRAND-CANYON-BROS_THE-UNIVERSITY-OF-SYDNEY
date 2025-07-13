@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import { getCurrentUserId } from "@/lib/client-auth"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -42,11 +43,18 @@ export default function PatientRegistrationPage() {
     age: "",
     gender: "",
     phoneNumber: "",
+    email: "",
+    password: "",
     address: "",
     village: "",
     district: "",
+    city: "",
+    province: "",
+    weight: "",
+    height: "",
     emergencyContact: "",
     emergencyPhone: "",
+    emergencyRelationship: "",
     knownConditions: [] as string[],
     currentMedications: "",
     allergies: [] as string[],
@@ -59,6 +67,7 @@ export default function PatientRegistrationPage() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState("")
 
   const handleConditionChange = (condition: string, checked: boolean) => {
     setFormData((prev) => ({
@@ -79,12 +88,89 @@ export default function PatientRegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setSubmitMessage("")
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      const currentUserId = getCurrentUserId()
+      if (!currentUserId) {
+        setSubmitMessage("❌ Please log in as a health worker to register patients.")
+        setIsSubmitting(false)
+        return
+      }
+
+      const response = await fetch('/api/health-worker/register-patient', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUserId
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          age: parseInt(formData.age),
+          gender: formData.gender,
+          phoneNumber: formData.phoneNumber,
+          email: formData.email || null,
+          password: formData.password,
+          address: formData.address,
+          village: formData.village,
+          district: formData.district,
+          city: formData.city,
+          province: formData.province,
+          weight: formData.weight ? parseFloat(formData.weight) : null,
+          height: formData.height ? parseFloat(formData.height) : null,
+          emergencyContactName: formData.emergencyContact,
+          emergencyContactPhone: formData.emergencyPhone,
+          emergencyContactRelationship: formData.emergencyRelationship,
+          knownConditions: formData.knownConditions.join(', '),
+          currentMedications: formData.currentMedications,
+          allergies: [...formData.allergies, formData.otherAllergies].filter(Boolean).join(', '),
+          createLogin: formData.createLogin,
+          privacyConsent: formData.privacyConsent,
+          dataUsageConsent: formData.dataUsageConsent
+        }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setSubmitMessage(`✅ Patient registered successfully! Patient ID: ${result.patientId}`)
+        // Reset form
+        setFormData({
+          fullName: "",
+          age: "",
+          gender: "",
+          phoneNumber: "",
+          email: "",
+          password: "",
+          address: "",
+          village: "",
+          district: "",
+          city: "",
+          province: "",
+          weight: "",
+          height: "",
+          emergencyContact: "",
+          emergencyPhone: "",
+          emergencyRelationship: "",
+          knownConditions: [],
+          currentMedications: "",
+          allergies: [],
+          otherAllergies: "",
+          previousSurgeries: "",
+          patientPhoto: null,
+          createLogin: false,
+          privacyConsent: false,
+          dataUsageConsent: false,
+        })
+      } else {
+        const error = await response.json()
+        setSubmitMessage(`❌ Registration failed: ${error.error}`)
+      }
+    } catch (error) {
+      setSubmitMessage("❌ Registration failed. Please try again.")
+      console.error('Registration error:', error)
+    } finally {
       setIsSubmitting(false)
-      alert("Patient registered successfully!")
-    }, 2000)
+    }
   }
 
   return (
@@ -101,6 +187,12 @@ export default function PatientRegistrationPage() {
           <p className="text-gray-600">Add a new patient to the health center system</p>
         </div>
       </div>
+
+      {submitMessage && (
+        <Alert className={submitMessage.includes('✅') ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}>
+          <AlertDescription>{submitMessage}</AlertDescription>
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Personal Information */}
@@ -147,8 +239,8 @@ export default function PatientRegistrationPage() {
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="MALE">Male</SelectItem>
+                    <SelectItem value="FEMALE">Female</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -198,9 +290,60 @@ export default function PatientRegistrationPage() {
               </div>
             </div>
 
-            <Separator />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="city">City/Kabupaten *</Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
+                  placeholder="City name"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="province">Province *</Label>
+                <Input
+                  id="province"
+                  value={formData.province}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, province: e.target.value }))}
+                  placeholder="Province name"
+                  required
+                />
+              </div>
+            </div>
 
             <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="weight">Weight (kg)</Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  value={formData.weight}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, weight: e.target.value }))}
+                  placeholder="Weight in kilograms"
+                  step="0.1"
+                  min="1"
+                  max="300"
+                />
+              </div>
+              <div>
+                <Label htmlFor="height">Height (cm)</Label>
+                <Input
+                  id="height"
+                  type="number"
+                  value={formData.height}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, height: e.target.value }))}
+                  placeholder="Height in centimeters"
+                  min="50"
+                  max="250"
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="grid gap-4 md:grid-cols-3">
               <div>
                 <Label htmlFor="emergencyContact">Emergency Contact Name *</Label>
                 <Input
@@ -220,6 +363,26 @@ export default function PatientRegistrationPage() {
                   placeholder="+62 xxx-xxxx-xxxx"
                   required
                 />
+              </div>
+              <div>
+                <Label htmlFor="emergencyRelationship">Relationship *</Label>
+                <Select
+                  value={formData.emergencyRelationship}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, emergencyRelationship: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select relationship" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="spouse">Spouse</SelectItem>
+                    <SelectItem value="parent">Parent</SelectItem>
+                    <SelectItem value="child">Child</SelectItem>
+                    <SelectItem value="sibling">Sibling</SelectItem>
+                    <SelectItem value="relative">Other Relative</SelectItem>
+                    <SelectItem value="friend">Friend</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -358,11 +521,44 @@ export default function PatientRegistrationPage() {
                     </Label>
                   </div>
                   <p className="text-xs text-gray-600 ml-6">
-                    Patient will receive SMS verification to set up secure access to their health data
+                    Patient will be able to log in using their phone number and password to view their health screening results and reports
                   </p>
                 </div>
               </AlertDescription>
             </Alert>
+
+            {formData.createLogin && (
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="pt-4 space-y-4">
+                  <div>
+                    <Label htmlFor="loginPhone">Login Phone Number *</Label>
+                    <Input
+                      id="loginPhone"
+                      type="tel"
+                      value={formData.phoneNumber}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, phoneNumber: e.target.value }))}
+                      placeholder="+62 xxx-xxxx-xxxx"
+                      required={formData.createLogin}
+                      readOnly
+                    />
+                    <p className="text-xs text-gray-600 mt-1">Patient will use this phone number to log in</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="password">Password *</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                      placeholder="Enter secure password"
+                      required={formData.createLogin}
+                      minLength={6}
+                    />
+                    <p className="text-xs text-gray-600 mt-1">Password must be at least 6 characters long</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <Alert className="border-l-4 border-l-green-500 bg-green-50">
               <AlertTriangle className="h-4 w-4" />
@@ -411,13 +607,34 @@ export default function PatientRegistrationPage() {
               type="submit"
               size="lg"
               className="w-full bg-blue-600 hover:bg-blue-700"
-              disabled={isSubmitting || !formData.privacyConsent}
+              disabled={
+                isSubmitting || 
+                !formData.privacyConsent || 
+                !formData.fullName || 
+                !formData.age || 
+                !formData.gender || 
+                !formData.phoneNumber || 
+                !formData.address || 
+                !formData.village || 
+                !formData.district || 
+                !formData.city || 
+                !formData.province ||
+                !formData.emergencyContact || 
+                !formData.emergencyPhone || 
+                !formData.emergencyRelationship ||
+                (formData.createLogin && (!formData.phoneNumber || !formData.password))
+              }
             >
               {isSubmitting ? "Registering Patient..." : "Register Patient"}
             </EnhancedButton>
             {!formData.privacyConsent && (
               <p className="text-sm text-red-600 text-center mt-2">
                 Privacy consent is required to register the patient
+              </p>
+            )}
+            {formData.createLogin && (!formData.phoneNumber || !formData.password) && (
+              <p className="text-sm text-red-600 text-center mt-2">
+                Phone number and password are required when creating login credentials
               </p>
             )}
           </CardContent>

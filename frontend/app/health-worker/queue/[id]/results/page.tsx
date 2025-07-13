@@ -1,53 +1,47 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Download, Share, AlertTriangle, CheckCircle, Heart, Activity } from "lucide-react"
 import Link from "next/link"
+import { getCurrentUserId } from "@/lib/client-auth"
 
-// Mock analysis results data
-const analysisResults = {
-  id: "A001",
-  patientName: "John Doe",
-  patientId: "P001",
-  analysisDate: "2025-01-02",
-  analysisTime: "14:30",
-  overallRisk: "Medium",
-  confidence: 87,
-  vitalSigns: {
-    heartRate: { value: 78, unit: "bpm", status: "normal", range: "60-100" },
-    bloodPressure: { systolic: 145, diastolic: 92, unit: "mmHg", status: "elevated", range: "120/80" },
-    respiratoryRate: { value: 18, unit: "breaths/min", status: "normal", range: "12-20" },
-    spO2: { value: 97, unit: "%", status: "normal", range: "95-100" },
-    temperature: { value: 36.8, unit: "°C", status: "normal", range: "36.1-37.2" },
-  },
-  aiFindings: [
-    {
-      category: "Cardiovascular",
-      finding: "Elevated blood pressure detected",
-      severity: "Moderate",
-      confidence: 92,
-    },
-    {
-      category: "Cardiac Rhythm",
-      finding: "Occasional premature ventricular contractions (PVCs)",
-      severity: "Mild",
-      confidence: 78,
-    },
-    {
-      category: "Respiratory",
-      finding: "Normal respiratory patterns observed",
-      severity: "Normal",
-      confidence: 95,
-    },
-  ],
-  recommendations: [
-    "Monitor blood pressure regularly",
-    "Consider lifestyle modifications (diet, exercise)",
-    "Follow-up appointment in 2 weeks",
-    "Continue current diabetes medication",
-  ],
-  specialistNotes:
-    "Patient shows signs of hypertension progression. Recommend cardiology consultation if BP remains elevated.",
+interface AnalysisResults {
+  id: string
+  patientName: string
+  patientId: string
+  analysisDate: string
+  analysisTime: string
+  overallRisk: string
+  confidence: number
+  vitalSigns: any
+  aiFindings: Array<{
+    category: string
+    finding: string
+    severity: string
+    confidence: number
+  }>
+  recommendations: string[]
+  specialistNotes: string
+}
+
+async function fetchAnalysisResults(analysisId: string): Promise<AnalysisResults | null> {
+  try {
+    const userId = getCurrentUserId()
+    if (!userId) {
+      console.error('No user ID found in session')
+      return null
+    }
+    
+    // For now, return a "not implemented" message as this would require complex analysis data structure
+    // In a real implementation, this would fetch from analysis_results or similar table
+    return null
+  } catch (error) {
+    console.error('Error fetching analysis results:', error)
+    return null
+  }
 }
 
 const getStatusColor = (status: string) => {
@@ -100,9 +94,81 @@ const getRiskColor = (risk: string) => {
   }
 }
 
-export default async function AnalysisResultsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  
+export default function AnalysisResultsPage({ params }: { params: { id: string } }) {
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResults | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function loadAnalysisResults() {
+      setLoading(true)
+      setError(null)
+      const data = await fetchAnalysisResults(params.id)
+      if (data) {
+        setAnalysisResults(data)
+      } else {
+        setError('Analysis results not available yet. This feature requires the analysis system to be fully implemented.')
+      }
+      setLoading(false)
+    }
+    
+    loadAnalysisResults()
+  }, [params.id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-neutral-600">Loading analysis results...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !analysisResults) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button asChild variant="outline" size="icon">
+            <Link href="/health-worker/queue">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-semibold md:text-3xl text-gray-800">Analysis Results</h1>
+            <p className="text-gray-600">Analysis ID: {params.id}</p>
+          </div>
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Analysis Results Not Available
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600">
+              {error || 'The detailed analysis results feature is not yet available. This would typically show:'}
+            </p>
+            <ul className="list-disc list-inside mt-4 space-y-2 text-gray-600">
+              <li>Comprehensive vital signs analysis</li>
+              <li>AI-powered risk assessment</li>
+              <li>Clinical findings and recommendations</li>
+              <li>Specialist consultation notes</li>
+              <li>Downloadable reports</li>
+            </ul>
+            <p className="text-sm text-gray-500 mt-4">
+              This feature requires the full analysis pipeline to be implemented with the medical AI systems.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // This would be the full analysis results display when implemented
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -130,126 +196,7 @@ export default async function AnalysisResultsPage({ params }: { params: Promise<
         </div>
       </div>
 
-      {/* Overall Risk Assessment */}
-      <Card className={`border-2 ${getRiskColor(analysisResults.overallRisk)}`}>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              {analysisResults.overallRisk === "High" && <AlertTriangle className="h-6 w-6" />}
-              {analysisResults.overallRisk === "Medium" && <AlertTriangle className="h-6 w-6" />}
-              {analysisResults.overallRisk === "Low" && <CheckCircle className="h-6 w-6" />}
-              Overall Risk Assessment
-            </CardTitle>
-            <Badge variant="outline" className="text-sm">
-              Confidence: {analysisResults.confidence}%
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center">
-            <div className="text-4xl font-bold mb-2">{analysisResults.overallRisk} Risk</div>
-            <p className="text-sm opacity-80">
-              Based on AI analysis of vital signs, ECG data, and respiratory patterns
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Vital Signs Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5" />
-              Vital Signs Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {Object.entries(analysisResults.vitalSigns).map(([key, vital]) => (
-              <div key={key} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="font-medium capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</p>
-                  <p className="text-sm text-gray-600">Normal: {vital.range}</p>
-                </div>
-                <div className="text-right">
-                  <p className={`text-lg font-bold ${getStatusColor(vital.status)}`}>
-                    {"systolic" in vital ? `${vital.systolic}/${vital.diastolic}` : vital.value} {vital.unit}
-                  </p>
-                  <p className={`text-sm capitalize ${getStatusColor(vital.status)}`}>{vital.status}</p>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* AI Findings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              AI Clinical Findings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {analysisResults.aiFindings.map((finding, index) => (
-              <div key={index} className="p-3 border rounded-lg">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="font-medium">{finding.category}</p>
-                    <p className="text-sm text-gray-600">{finding.finding}</p>
-                  </div>
-                  {getSeverityBadge(finding.severity)}
-                </div>
-                <div className="flex justify-between items-center text-xs text-gray-500">
-                  <span>Confidence: {finding.confidence}%</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recommendations */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recommendations & Next Steps</CardTitle>
-          <CardDescription>AI-generated recommendations based on analysis results</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {analysisResults.recommendations.map((recommendation, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                <p className="text-sm">{recommendation}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Specialist Notes */}
-      {analysisResults.specialistNotes && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Specialist Review Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm">{analysisResults.specialistNotes}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex gap-4 pt-4">
-        <Button asChild className="bg-brand-medical-green hover:bg-brand-medical-green/90">
-          <Link href={`/health-worker/patients/${analysisResults.patientId}`}>View Patient Profile</Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href={`/health-worker/upload?patient=${analysisResults.patientId}`}>Upload New Data</Link>
-        </Button>
-      </div>
+      {/* Implementation would continue here with real data */}
     </div>
   )
 }

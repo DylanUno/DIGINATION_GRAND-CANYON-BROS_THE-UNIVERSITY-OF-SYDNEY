@@ -2,10 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { StatusIndicator } from "@/components/ui/status-indicator"
 import { Home, Users, Upload, TicketIcon as Queue, LogOut, HeartPulse, Bell } from "lucide-react"
+import { logout, getCurrentUserId } from "@/lib/client-auth"
 
 const navItems = [
   { href: "/health-worker/dashboard", label: "Dashboard", icon: Home },
@@ -14,8 +16,38 @@ const navItems = [
   { href: "/health-worker/queue", label: "Patient Queue", icon: Queue },
 ]
 
+interface HealthWorkerInfo {
+  full_name: string
+  health_center_name: string
+}
+
 export function HealthWorkerSidebar() {
   const pathname = usePathname()
+  const [healthWorkerInfo, setHealthWorkerInfo] = useState<HealthWorkerInfo | null>(null)
+
+  useEffect(() => {
+    async function fetchHealthWorkerInfo() {
+      try {
+        const userId = getCurrentUserId()
+        if (!userId) return
+
+        const response = await fetch('/api/health-worker/info', {
+          headers: {
+            'x-user-id': userId
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setHealthWorkerInfo(data)
+        }
+      } catch (error) {
+        console.error('Error fetching health worker info:', error)
+      }
+    }
+
+    fetchHealthWorkerInfo()
+  }, [])
 
   return (
     <div className="hidden border-r border-neutral-200 bg-gradient-to-b from-neutral-50 to-white md:block">
@@ -56,10 +88,19 @@ export function HealthWorkerSidebar() {
         </div>
         <div className="mt-auto p-4 border-t border-neutral-200">
           <div className="mb-3 text-body-sm text-neutral-600">
-            <p className="font-medium text-neutral-900">Rural Health Center</p>
-            <p className="text-body-sm">Dr. Sarah Johnson</p>
+            <p className="font-medium text-neutral-900">
+              {healthWorkerInfo?.health_center_name || 'Health Center'}
+            </p>
+            <p className="text-body-sm">
+              {healthWorkerInfo?.full_name || 'Health Worker'}
+            </p>
           </div>
-          <EnhancedButton variant="ghost" size="sm" className="w-full justify-start text-neutral-600">
+          <EnhancedButton 
+            variant="ghost" 
+            size="sm" 
+            className="w-full justify-start text-neutral-600"
+            onClick={logout}
+          >
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
           </EnhancedButton>

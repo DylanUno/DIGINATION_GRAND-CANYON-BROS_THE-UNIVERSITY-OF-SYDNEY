@@ -1,9 +1,12 @@
+"use client"
+
 import type React from "react"
 import { PatientSidebar } from "@/components/patient-sidebar"
 import { HeartPulse, Menu, LogOut } from "lucide-react"
 import Link from "next/link"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { logout } from "@/lib/client-auth"
 
 export default function PatientDashboardLayout({
   children,
@@ -52,7 +55,12 @@ export default function PatientDashboardLayout({
                 ))}
               </nav>
               <div className="mt-auto border-t pt-4">
-                <EnhancedButton variant="ghost" size="sm" className="w-full justify-start text-neutral-600">
+                <EnhancedButton 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full justify-start text-neutral-600"
+                  onClick={logout}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Keluar
                 </EnhancedButton>

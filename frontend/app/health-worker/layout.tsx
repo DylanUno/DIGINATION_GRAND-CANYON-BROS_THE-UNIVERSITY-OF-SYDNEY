@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { HealthWorkerSidebar } from "@/components/health-worker/sidebar"
 import { HeartPulse, Menu, LogOut, Bell } from "lucide-react"
@@ -5,6 +7,7 @@ import Link from "next/link"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { StatusIndicator } from "@/components/ui/status-indicator"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { logout } from "@/lib/client-auth"
 
 export default function HealthWorkerLayout({
   children,
@@ -53,7 +56,12 @@ export default function HealthWorkerLayout({
                   <p className="font-medium text-neutral-900">Rural Health Center</p>
                   <p className="text-body-sm">Dr. Sarah Johnson</p>
                 </div>
-                <EnhancedButton variant="ghost" size="sm" className="w-full justify-start text-neutral-600">
+                <EnhancedButton 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full justify-start text-neutral-600"
+                  onClick={logout}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </EnhancedButton>

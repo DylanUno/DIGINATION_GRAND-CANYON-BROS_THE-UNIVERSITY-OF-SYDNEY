@@ -1,7 +1,6 @@
 import Link from "next/link"
-import Image from "next/image"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
-import { Timer, BrainCircuit, Stethoscope, Building2, CheckCircle, ArrowRight, Plus } from "lucide-react"
+import { Timer, BrainCircuit, Stethoscope, Building2, CheckCircle, ArrowRight, HeartPulse } from "lucide-react"
 
 export default function LandingPageComponent() {
   return (
@@ -10,7 +9,7 @@ export default function LandingPageComponent() {
       <header className="sticky top-0 z-50 px-4 lg:px-6 h-16 flex items-center border-b border-neutral-200 bg-white/95 backdrop-blur-sm">
         <Link href="/" className="flex items-center justify-center">
           <div className="feature-icon health mr-3">
-            <Plus className="h-6 w-6 rotate-45" />
+            <HeartPulse className="h-6 w-6" />
           </div>
           <span className="text-h2 font-bold text-neutral-900">VitalSense Pro</span>
         </Link>
@@ -86,14 +85,13 @@ export default function LandingPageComponent() {
               </div>
 
               <div className="relative animate-fade-in">
-                <div className="absolute inset-0 bg-gradient-to-br from-trust-blue/20 to-health-teal/20 rounded-2xl blur-3xl"></div>
-                <Image
-                  src="/placeholder.svg?width=600&height=600"
-                  width="600"
-                  height="600"
-                  alt="AI Health Analysis Platform Dashboard"
-                  className="relative mx-auto aspect-square overflow-hidden rounded-2xl object-cover shadow-strong"
-                />
+                <div className="bg-gradient-to-br from-trust-blue/20 to-health-teal/20 rounded-2xl p-12 text-center">
+                  <div className="feature-icon health mx-auto mb-4" style={{ width: '120px', height: '120px' }}>
+                    <HeartPulse className="h-16 w-16" />
+                  </div>
+                  <h3 className="text-h2 font-bold text-trust-blue mb-2">VitalSense Pro</h3>
+                  <p className="text-body text-neutral-600">AI-Powered Health Analysis Platform</p>
+                </div>
               </div>
             </div>
           </div>

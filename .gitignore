@@ -1,49 +1,188 @@
+# =======================
+# ENVIRONMENT VARIABLES
+# =======================
+# All environment files
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.development
+frontend/.env.development.local
+frontend/.env.test
+frontend/.env.test.local
+frontend/.env.production
+frontend/.env.production.local
+
+# =======================
+# DOCUMENTATION FILES
+# =======================
+# Database and development documentation
+DATABASE_DOCUMENTATION.md
+DATABASE_QUICK_REFERENCE.md
+DEV_SETUP.md
+PROJECT_PLAN.md
+style_guide.md
+frontend-refactor-plan.md
+*-refactor-plan.md
+*-plan.md
+*-notes.md
+*-documentation.md
+
+# =======================
+# NODE.JS / NPM / YARN
+# =======================
 # Dependencies
 node_modules/
 */node_modules/
 **/node_modules/
 frontend/node_modules/
-frontend/.pnp
-frontend/.pnp.js
+backend/node_modules/
+jspm_packages/
+
+# Package manager files
 package-lock.json
 **/package-lock.json
 yarn.lock
+**/yarn.lock
 pnpm-lock.yaml
+**/pnpm-lock.yaml
+.pnpm-debug.log*
+.yarn-integrity
+.yarn-cache/
 
-# Testing
-frontend/coverage
+# NPM
+npm-debug.log*
+npm-error.log*
+.npm
+.npmrc
 
-# Next.js
+# =======================
+# NEXT.JS / REACT
+# =======================
+# Next.js build output
+.next/
 frontend/.next/
+out/
 frontend/out/
+build/
+frontend/build/
+dist/
+frontend/dist/
 
-# Production
-frontend/build
+# Next.js cache
+.next/cache/
+frontend/.next/cache/
 
-# Backend Dependencies (Python)
+# Vercel
+.vercel
+frontend/.vercel
+
+# Next.js TypeScript
+next-env.d.ts
+frontend/next-env.d.ts
+
+# =======================
+# PYTHON / FASTAPI
+# =======================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 backend/__pycache__/
 backend/*.py[cod]
 backend/*$py.class
-backend/*.so
-backend/.Python
-backend/build/
-backend/develop-eggs/
-backend/dist/
-backend/downloads/
-backend/eggs/
-backend/.eggs/
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
 backend/lib/
 backend/lib64/
-backend/parts/
-backend/sdist/
-backend/var/
-backend/wheels/
-backend/*.egg-info/
-backend/.installed.cfg
-backend/*.egg
-backend/MANIFEST
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
 
 # Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
 backend/venv/
 backend/env/
 backend/ENV/
@@ -51,79 +190,395 @@ backend/env.bak/
 backend/venv.bak/
 backend_venv/
 *_venv/
-venv/
-env/
-ENV/
+.venv/
+.env/
 
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+.pdm-python
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# =======================
+# TYPESCRIPT
+# =======================
+*.tsbuildinfo
+.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# =======================
+# DATABASES
+# =======================
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# PostgreSQL
+*.sql.backup
+*.sql.bak
+*.dump
+
+# MongoDB
+*.bson
+
+# =======================
+# UPLOADS & MEDIA
+# =======================
 # Backend uploads and temporary files
 backend/uploads/
 backend/temp/
-backend/*.dat
-backend/*.hea
-backend/*.mp4
-backend/*.mov
-backend/*.avi
+uploads/
+temp/
+tmp/
+*.dat
+*.hea
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.m4v
+*.3gp
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
 
-# Misc
-.DS_Store
-*.pem
-Thumbs.db
-
-# Planning and documentation files (exclude from tracking)
-frontend-refactor-plan.md
-*-refactor-plan.md
-*-plan.md
-*-notes.md
-
-# Build outputs
-dist/
-build/
-out/
-*.tgz
-*.tar.gz
-
-# Cache directories
-.cache/
-*.cache
-.parcel-cache/
-.next/cache/
-
-# Node
+# =======================
+# LOGS
+# =======================
+# All log files
+*.log
+*.log.*
+logs/
+**/logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# Python
-*.log
+# =======================
+# CACHE DIRECTORIES
+# =======================
+.cache/
+*.cache
+.parcel-cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.nyc_output/
 
-# Environment Variables
-.env*.local
+# =======================
+# OPERATING SYSTEM
+# =======================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =======================
+# IDE / EDITORS
+# =======================
+# Visual Studio Code
+.vscode/
+.vscode-test/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+Session.vim
+Sessionx.vim
+.vimrc.local
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# =======================
+# RUNTIME & PROCESS
+# =======================
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
 .env
-backend/.env
-frontend/.env
+.env.test
+.env.production
 
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
 
-# Editor directories and files
-.idea
-.vscode
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Next.js build output
+.next
 
-# Database
-*.db
-*.sqlite3
+# Nuxt.js build / generate output
+.nuxt
+dist
 
-# AI API Keys and sensitive data
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Rollup.js default build output
+dist/
+
+# =======================
+# SECURITY & KEYS
+# =======================
+# API Keys and sensitive data
 *.key
+*.pem
+*.p12
+*.p8
+*.cer
+*.crt
+*.der
+*.pfx
+*.p7b
+*.p7r
+*.srl
 api_keys.txt
+secrets.txt
+credentials.json
+service-account.json
 
-# Project Plan and Documentation
-PROJECT_PLAN.md
-style_guide.md 
+# =======================
+# MISC
+# =======================
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.tgz
+*.tar.gz
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+
+# Lock files
+*.lock
+
+# Editor backup files
+*~
+*.bak
+*.backup
+*.swp
+*.swo
+*.*~
+
+# Mac bundle stuff
+*.dmg
+*.app
+
+# Linux package files
+*.deb
+*.rpm
+
+# =======================
+# CUSTOM PROJECT FILES
+# =======================
+# AI/ML models
+*.model
+*.pkl
+*.h5
+*.pb
+*.onnx
+*.tflite
+
+# Data files
+*.csv
+*.json.bak
+*.xlsx
+*.xls
+
+# Testing
+.nyc_output/
+coverage/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/ 
