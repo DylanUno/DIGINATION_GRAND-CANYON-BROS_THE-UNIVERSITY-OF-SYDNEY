@@ -581,4 +581,19 @@ env/
 venv/
 ENV/
 env.bak/
-venv.bak/ 
+venv.bak/
+
+# =======================
+# PROJECT-SPECIFIC FILES
+# =======================
+# Virtual environment directory
+backend_venv/
+
+# Database setup and test scripts (may contain sensitive data)
+frontend/scripts/
+scripts/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3 
