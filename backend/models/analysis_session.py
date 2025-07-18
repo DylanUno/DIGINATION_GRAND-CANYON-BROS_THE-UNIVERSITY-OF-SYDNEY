@@ -20,10 +20,10 @@ class AnalysisStatus(enum.Enum):
 
 class RiskLevel(enum.Enum):
     """Risk level enumeration"""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
 
 class AnalysisSession(Base):
     """
@@ -34,12 +34,13 @@ class AnalysisSession(Base):
     
     # Primary key
     id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String, unique=True, nullable=False, index=True)  # UUID for file organization
     
     # Foreign keys
-    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False, index=True)
-    health_worker_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Who uploaded
+    patient_id = Column(String, ForeignKey("patients.patient_id"), nullable=False, index=True)
+    health_worker_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Who uploaded
     specialist_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Who reviewed
-    health_center_id = Column(Integer, ForeignKey("health_centers.id"), nullable=False)
+    health_center_id = Column(Integer, ForeignKey("health_centers.id"), nullable=True)
     
     # Status tracking
     status = Column(Enum(AnalysisStatus), default=AnalysisStatus.UPLOADED, nullable=False, index=True)
@@ -47,8 +48,11 @@ class AnalysisSession(Base):
     final_risk_level = Column(Enum(RiskLevel), nullable=True)  # After specialist review
     
     # File information
-    vital_signs_file_path = Column(String, nullable=True)  # Path to .dat file
-    header_file_path = Column(String, nullable=True)  # Path to .hea file
+    dat_file_path = Column(String, nullable=True)  # Path to .dat file
+    hea_file_path = Column(String, nullable=True)  # Path to .hea file
+    dat_normalized_file_path = Column(String, nullable=True)  # Path to normalized .dat file
+    hea_normalized_file_path = Column(String, nullable=True)  # Path to normalized .hea file
+    breath_annotation_file_path = Column(String, nullable=True)  # Path to .breath file
     video_file_path = Column(String, nullable=True)  # Path to video file
     
     # Patient symptoms (from health worker input)
@@ -57,6 +61,11 @@ class AnalysisSession(Base):
     pain_level = Column(Integer, nullable=True)  # 0-10 scale
     symptom_duration = Column(String, nullable=True)
     additional_notes = Column(Text, nullable=True)
+    
+    # Processing results
+    features = Column(JSON, nullable=True)  # Extracted vital signs features
+    mai_dxo_data = Column(JSON, nullable=True)  # MAI-DxO patient data structure
+    clinical_notes = Column(JSON, nullable=True)  # Clinical notes from health worker
     
     # Processed vital signs data
     recording_duration_seconds = Column(Integer, nullable=True)
@@ -100,7 +109,7 @@ class AnalysisSession(Base):
     
     # Relationships
     patient = relationship("Patient", backref="analysis_sessions")
-    health_worker = relationship("User", foreign_keys=[health_worker_user_id], backref="uploaded_sessions")
+    health_worker = relationship("User", foreign_keys=[health_worker_id], backref="uploaded_sessions")
     specialist = relationship("User", foreign_keys=[specialist_user_id], backref="reviewed_sessions")
     health_center = relationship("HealthCenter", backref="analysis_sessions")
     

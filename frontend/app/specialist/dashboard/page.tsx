@@ -20,6 +20,7 @@ import {
   TrendingUp,
 } from "lucide-react"
 import { getCurrentUserId } from "@/lib/client-auth"
+import { useRouter } from "next/navigation"
 
 interface SpecialistInfo {
   full_name: string
@@ -128,6 +129,7 @@ const getRiskBadge = (risk: string) => {
 }
 
 export default function SpecialistDashboard() {
+  const router = useRouter()
   const [specialistInfo, setSpecialistInfo] = useState<SpecialistInfo | null>(null)
   const [queueStats, setQueueStats] = useState<QueueStats>({ totalCases: 0, highPriorityCases: 0, averageReviewTime: 0 })
   const [patientQueue, setPatientQueue] = useState<PatientQueueItem[]>([])
@@ -353,7 +355,11 @@ export default function SpecialistDashboard() {
 
                         {/* Action */}
                         <div className="col-span-1">
-                          <EnhancedButton size="sm" className="w-full">
+                          <EnhancedButton 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => router.push(`/specialist/patient/${patient.patient_id}`)}
+                          >
                             Review
                           </EnhancedButton>
                         </div>

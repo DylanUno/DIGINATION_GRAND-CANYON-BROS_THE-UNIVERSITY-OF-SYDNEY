@@ -14,7 +14,7 @@ from config import settings
 from database import create_tables, test_connection
 
 # Import our route modules
-from routers import auth
+from routers import auth, upload, video_processing, specialist_analysis, plot_api
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -101,6 +101,10 @@ async def get_config():
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
+app.include_router(upload.router, prefix="/api/upload", tags=["file-upload"])
+app.include_router(video_processing.router, prefix="/api/video", tags=["video-processing"])
+app.include_router(specialist_analysis.router, prefix="/api/specialist-analysis", tags=["specialist-analysis"])
+app.include_router(plot_api.router, prefix="/api/plots", tags=["medical-plots"])
 # app.include_router(patients.router, prefix="/api/patients", tags=["patients"])
 # app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
 # app.include_router(specialists.router, prefix="/api/specialists", tags=["specialists"])

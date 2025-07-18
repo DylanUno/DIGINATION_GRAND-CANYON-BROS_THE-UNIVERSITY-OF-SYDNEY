@@ -124,6 +124,7 @@ export default function PatientRegistrationPage() {
           knownConditions: formData.knownConditions.join(', '),
           currentMedications: formData.currentMedications,
           allergies: [...formData.allergies, formData.otherAllergies].filter(Boolean).join(', '),
+          previousSurgeries: formData.previousSurgeries,
           createLogin: formData.createLogin,
           privacyConsent: formData.privacyConsent,
           dataUsageConsent: formData.dataUsageConsent

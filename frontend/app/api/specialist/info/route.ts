@@ -35,23 +35,25 @@ export async function GET(request: NextRequest) {
 
     const specialist = specialistData[0]
 
-    // Get available health centers as fallback
-    let assignedCenters = []
+    // Get assigned health centers for this specialist
+    let assignedCenters: Array<{id: number, name: string, type: string}> = []
     try {
       const healthCenters = await query(`
-        SELECT id, name FROM health_centers ORDER BY name LIMIT 3
-      `)
+        SELECT hc.id, hc.name
+        FROM health_centers hc
+        JOIN specialist_assignments sa ON hc.id = sa.health_center_id
+        JOIN specialists s ON sa.specialist_id = s.id
+        WHERE s.user_id = $1 AND sa.is_active = true
+        ORDER BY hc.name
+      `, [sessionUserId])
       assignedCenters = healthCenters.map(center => ({
         id: center.id,
         name: center.name,
-        type: 'clinic' // Default type since column might not exist in all environments
+        type: 'puskesmas'
       })) || []
     } catch (error) {
-      // If health_centers query fails, use default data
-      assignedCenters = [
-        { id: 1, name: 'Central Medical Center', type: 'hospital' },
-        { id: 2, name: 'Downtown Clinic', type: 'clinic' }
-      ]
+      console.error('Error fetching assigned health centers:', error)
+      assignedCenters = []
     }
 
     const responseData = {

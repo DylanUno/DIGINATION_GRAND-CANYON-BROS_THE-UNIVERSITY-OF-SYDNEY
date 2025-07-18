@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 401 })
     }
     
-    // Get specialist ID
+    // Get specialist ID and assigned health centers
     const specialistResult = await query(`
-      SELECT id FROM specialists WHERE user_id = $1
+      SELECT s.id FROM specialists s WHERE s.user_id = $1
     `, [sessionUserId])
 
     if (specialistResult.length === 0) {
@@ -21,39 +21,60 @@ export async function GET(request: NextRequest) {
 
     const specialistId = specialistResult[0].id
 
-    // Query real database for patient queue data (with privacy protection - initials only)
-    // This queries health_screenings that need specialist attention
-    // Only include screenings from the last 30 days with actual findings
+    // Get assigned health centers for this specialist
+    const assignedCenters = await query(`
+      SELECT health_center_id FROM specialist_assignments 
+      WHERE specialist_id = $1 AND is_active = true
+    `, [specialistId])
+
+    if (assignedCenters.length === 0) {
+      // No assigned health centers, return empty queue
+      return NextResponse.json([])
+    }
+
+    const healthCenterIds = assignedCenters.map(center => center.health_center_id)
+
+    // Query real database for patient queue data from analysis_sessions 
+    // Only from assigned health centers
     const queueData = await query(`
-      SELECT 
-        p.id as patient_id,
-        LEFT(p.full_name, 1) || '.' || LEFT(SPLIT_PART(p.full_name, ' ', -1), 1) || '.' as initials,
-        p.age,
-        p.gender,
-        hc.name as health_center_name,
-        TO_CHAR(hs.screening_date, 'HH24:MI') as submission_time,
-        CASE 
-          WHEN hs.overall_status = 'urgent' THEN 'high'
-          WHEN hs.overall_status = 'attention_needed' THEN 'medium'
-          ELSE 'low'
-        END as risk_level,
-        COALESCE(hs.overall_notes, 'Routine health screening requiring specialist review') as symptoms,
-        EXTRACT(EPOCH FROM (NOW() - hs.screening_date))/60 as minutes_ago
-      FROM health_screenings hs
-      JOIN patients p ON hs.patient_id = p.id
-      JOIN health_centers hc ON hs.health_center_id = hc.id
-      WHERE hs.overall_status IN ('urgent', 'attention_needed')
-        AND hs.screening_date >= NOW() - INTERVAL '30 days'
-        AND hs.overall_notes IS NOT NULL
-        AND hs.overall_notes != ''
+      WITH latest_sessions AS (
+        SELECT DISTINCT ON (p.patient_id)
+          p.patient_id,
+          LEFT(p.full_name, 1) || '.' || LEFT(SPLIT_PART(p.full_name, ' ', -1), 1) || '.' as initials,
+          p.age,
+          p.gender,
+          COALESCE(hc.name, 'VitalSense Health Center') as health_center_name,
+          TO_CHAR(a.created_at, 'HH24:MI') as submission_time,
+          CASE 
+            WHEN a.ai_risk_level = 'CRITICAL' THEN 'high'
+            WHEN a.ai_risk_level = 'HIGH' THEN 'high'
+            WHEN a.ai_risk_level = 'MEDIUM' THEN 'medium'
+            ELSE 'low'
+          END as risk_level,
+          COALESCE(a.chief_complaint, 'ECG analysis requiring specialist review') as symptoms,
+          EXTRACT(EPOCH FROM (NOW() - a.created_at))/60 as minutes_ago,
+          a.ai_risk_level
+        FROM analysis_sessions a
+        JOIN patients p ON a.patient_id = p.patient_id
+        LEFT JOIN health_centers hc ON p.registered_at_health_center_id = hc.id
+        WHERE a.status IN ('PROCESSING', 'COMPLETED')
+          AND a.created_at >= NOW() - INTERVAL '30 days'
+          AND a.patient_id IS NOT NULL
+          AND p.registered_at_health_center_id = ANY($1)
+        ORDER BY p.patient_id, a.created_at DESC
+      )
+      SELECT * FROM latest_sessions
       ORDER BY 
-        CASE WHEN hs.overall_status = 'urgent' THEN 1 ELSE 2 END,
-        hs.screening_date DESC
-    `, [])
+        CASE WHEN ai_risk_level = 'CRITICAL' THEN 1 
+             WHEN ai_risk_level = 'HIGH' THEN 2 
+             WHEN ai_risk_level = 'MEDIUM' THEN 3
+             ELSE 4 END,
+        minutes_ago DESC
+    `, [healthCenterIds])
 
     // Format the response with wait time calculation
     const formattedQueueData = queueData.map(item => ({
-      patient_id: `FRESH_PT${String(item.patient_id).padStart(3, '0')}`,
+      patient_id: item.patient_id, // Use real patient_id from database
       initials: item.initials,
       age: item.age,
       gender: item.gender,
@@ -61,7 +82,7 @@ export async function GET(request: NextRequest) {
       submission_time: item.submission_time,
       risk_level: item.risk_level,
       symptoms: item.symptoms,
-      wait_time: `${Math.round(item.minutes_ago)}m`
+      wait_time: `${Math.max(0, Math.round(item.minutes_ago))}m` // Ensure non-negative wait time
     }))
 
     return NextResponse.json(formattedQueueData)

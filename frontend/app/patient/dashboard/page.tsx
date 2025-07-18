@@ -31,6 +31,14 @@ interface PatientInfo {
   gender: string
 }
 
+interface ClinicalFinding {
+  finding: string
+  category: string
+  severity: string
+  confidence: number
+  specialist: string
+}
+
 interface DashboardData {
   latestScreening: {
     screening_date: string
@@ -52,6 +60,7 @@ interface DashboardData {
     action_required: boolean
     created_at: string
   }>
+  clinical_findings: ClinicalFinding[]
 }
 
 async function fetchPatientInfo(): Promise<PatientInfo | null> {
@@ -87,12 +96,14 @@ async function fetchDashboardData(): Promise<DashboardData | null> {
     
     const response = await fetch('/api/patient/dashboard-data', {
       headers: {
-        'x-user-id': userId // Get actual logged-in user ID
+        'x-user-id': userId
       }
     })
+    
     if (!response.ok) {
       throw new Error('Failed to fetch dashboard data')
     }
+    
     return await response.json()
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
@@ -106,6 +117,13 @@ export default function PatientDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Development helper: Auto-login as patient if no user ID is set
+    if (typeof window !== 'undefined' && !getCurrentUserId()) {
+      localStorage.setItem('userId', '1')
+      localStorage.setItem('userRole', 'patient')
+      localStorage.setItem('isAuthenticated', 'true')
+    }
+    
     async function loadData() {
       setLoading(true)
       const [patientInfo, dashboardInfo] = await Promise.all([
@@ -249,9 +267,11 @@ export default function PatientDashboard() {
             {latestScreening?.overall_notes || 'No recent health screening data available. Please schedule an appointment for your next health check.'}
           </p>
         </CardContent>
-      </Card>
+              </Card>
 
-      {/* Quick Actions Panel */}
+
+
+        {/* Quick Actions Panel */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>

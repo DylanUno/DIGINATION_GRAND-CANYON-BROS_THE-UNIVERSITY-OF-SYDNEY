@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 401 })
     }
     
-    // Get specialist ID
+    // Get specialist ID and assigned health centers
     const specialistResult = await query(`
-      SELECT id FROM specialists WHERE user_id = $1
+      SELECT s.id FROM specialists s WHERE s.user_id = $1
     `, [sessionUserId])
 
     if (specialistResult.length === 0) {
@@ -21,35 +21,55 @@ export async function GET(request: NextRequest) {
 
     const specialistId = specialistResult[0].id
 
-    // Query real database for specialist queue statistics
-    // Use same filtering criteria as patient queue for consistency
+    // Get assigned health centers for this specialist
+    const assignedCenters = await query(`
+      SELECT health_center_id FROM specialist_assignments 
+      WHERE specialist_id = $1 AND is_active = true
+    `, [specialistId])
+
+    if (assignedCenters.length === 0) {
+      // No assigned health centers, return zero stats
+      return NextResponse.json({
+        totalCases: 0,
+        highPriorityCases: 0,
+        averageReviewTime: 0,
+        todayReviewed: 0,
+        todayHighPriority: 0,
+        todayEmergency: 0
+      })
+    }
+
+    const healthCenterIds = assignedCenters.map(center => center.health_center_id)
+
+    // Query real database for specialist queue statistics from assigned health centers only
     const totalCasesResult = await query(`
       SELECT COUNT(*) as count
-      FROM health_screenings hs
-      JOIN patients p ON hs.patient_id = p.id
-      WHERE hs.overall_status IN ('urgent', 'attention_needed')
-        AND hs.screening_date >= NOW() - INTERVAL '30 days'
-        AND hs.overall_notes IS NOT NULL
-        AND hs.overall_notes != ''
-    `)
+      FROM analysis_sessions a
+      JOIN patients p ON a.patient_id = p.patient_id
+      WHERE a.status IN ('PROCESSING', 'COMPLETED')
+        AND a.created_at >= NOW() - INTERVAL '30 days'
+        AND a.ai_risk_level IN ('HIGH', 'MEDIUM')
+        AND p.registered_at_health_center_id = ANY($1)
+    `, [healthCenterIds])
 
     const highPriorityCasesResult = await query(`
       SELECT COUNT(*) as count
-      FROM health_screenings hs
-      JOIN patients p ON hs.patient_id = p.id
-      WHERE hs.overall_status = 'urgent'
-        AND hs.screening_date >= NOW() - INTERVAL '30 days'
-        AND hs.overall_notes IS NOT NULL
-        AND hs.overall_notes != ''
-    `)
+      FROM analysis_sessions a
+      JOIN patients p ON a.patient_id = p.patient_id
+      WHERE a.status IN ('PROCESSING', 'COMPLETED')
+        AND a.created_at >= NOW() - INTERVAL '30 days'
+        AND a.ai_risk_level = 'HIGH'
+        AND p.registered_at_health_center_id = ANY($1)
+    `, [healthCenterIds])
 
     const todayReviewedResult = await query(`
       SELECT COUNT(*) as count
-      FROM health_screenings hs
-      JOIN patients p ON hs.patient_id = p.id
-      WHERE DATE(hs.screening_date) = CURRENT_DATE
-      AND hs.overall_status IN ('healthy', 'completed')
-    `)
+      FROM analysis_sessions a
+      JOIN patients p ON a.patient_id = p.patient_id
+      WHERE DATE(a.created_at) = CURRENT_DATE
+      AND a.status = 'COMPLETED'
+      AND p.registered_at_health_center_id = ANY($1)
+    `, [healthCenterIds])
 
     const statsData = {
       totalCases: parseInt(totalCasesResult[0]?.count || '0'),

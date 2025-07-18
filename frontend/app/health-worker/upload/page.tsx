@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -100,14 +100,22 @@ export default function DataUploadPage() {
   const [uploadedFiles, setUploadedFiles] = useState({
     datFile: null as File | null,
     heaFile: null as File | null,
+    datNormalizedFile: null as File | null,
+    heaNormalizedFile: null as File | null,
+    breathAnnotationFile: null as File | null,
     videoFile: null as File | null,
   })
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
+  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([])
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const [chiefComplaint, setChiefComplaint] = useState("")
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([])
   const [painScale, setPainScale] = useState([0])
   const [symptomDuration, setSymptomDuration] = useState("")
+  const [temperature, setTemperature] = useState("")
   const [staffNotes, setStaffNotes] = useState("")
   const [uploadProgress, setUploadProgress] = useState(0)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -131,15 +139,32 @@ export default function DataUploadPage() {
     loadPatients()
   }, [])
 
+  // Cleanup camera stream on component unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [cameraStream])
+
+  // Set video source when camera stream is available
+  useEffect(() => {
+    if (cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream
+      videoRef.current.play().catch(console.error)
+    }
+  }, [cameraStream])
+
   useEffect(() => {
     let interval: NodeJS.Timeout
     if (isRecording) {
       interval = setInterval(() => {
         setRecordingTime((prev) => {
-          if (prev >= 120) {
-            // 2 minutes max
+          if (prev >= 30) {
+            // 30 seconds max for VitalLens API compatibility
             setIsRecording(false)
-            return 120
+            return 30
           }
           return prev + 1
         })
@@ -152,6 +177,78 @@ export default function DataUploadPage() {
     setUploadedFiles((prev) => ({ ...prev, [type]: file }))
   }
 
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user'
+        },
+        audio: false 
+      })
+      setCameraStream(stream)
+    } catch (error) {
+      console.error('Error accessing camera:', error)
+      alert('Unable to access camera. Please ensure camera permissions are granted and try using HTTPS.')
+    }
+  }
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop())
+      setCameraStream(null)
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+    }
+  }
+
+  const startRecording = async () => {
+    if (!cameraStream) {
+      await startCamera()
+      return
+    }
+
+    try {
+      const recorder = new MediaRecorder(cameraStream, {
+        mimeType: 'video/webm;codecs=vp8'
+      })
+
+      const chunks: Blob[] = []
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data)
+        }
+      }
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' })
+        const videoFile = new File([blob], `recording_${Date.now()}.webm`, { type: 'video/webm' })
+        setUploadedFiles((prev) => ({ ...prev, videoFile }))
+        setRecordedChunks([])
+      }
+
+      setRecordedChunks(chunks)
+      setMediaRecorder(recorder)
+      setIsRecording(true)
+      setRecordingTime(0)
+      recorder.start()
+    } catch (error) {
+      console.error('Error starting recording:', error)
+      alert('Unable to start recording. Please try again.')
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop()
+      setIsRecording(false)
+      setMediaRecorder(null)
+      stopCamera()
+    }
+  }
+
   const handleSymptomToggle = (symptom: string) => {
     setSelectedSymptoms((prev) => (prev.includes(symptom) ? prev.filter((s) => s !== symptom) : [...prev, symptom]))
   }
@@ -162,21 +259,164 @@ export default function DataUploadPage() {
       return
     }
 
+    if (!uploadedFiles.datFile || !uploadedFiles.heaFile || !uploadedFiles.datNormalizedFile || !uploadedFiles.heaNormalizedFile || !uploadedFiles.breathAnnotationFile) {
+      alert("Please upload all 5 required files: .dat, .hea, normalized .dat, normalized .hea, and .breath annotation files")
+      return
+    }
+
     setIsProcessing(true)
     setUploadProgress(0)
     setProcessingStatus("Uploading files...")
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setProcessingStatus("Analyzing vital signs... Estimated time: 3 minutes")
-          return 100
-        }
-        return prev + 10
+    try {
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append('patient_id', selectedPatient.patient_id)
+      formData.append('chief_complaint', chiefComplaint)
+      formData.append('symptoms', JSON.stringify(selectedSymptoms))
+      formData.append('pain_scale', painScale[0].toString())
+      formData.append('symptom_duration', symptomDuration)
+      formData.append('temperature', temperature)
+      formData.append('staff_notes', staffNotes)
+      formData.append('dat_file', uploadedFiles.datFile)
+      formData.append('hea_file', uploadedFiles.heaFile)
+      formData.append('dat_normalized_file', uploadedFiles.datNormalizedFile)
+      formData.append('hea_normalized_file', uploadedFiles.heaNormalizedFile)
+      formData.append('breath_annotation_file', uploadedFiles.breathAnnotationFile)
+      
+      // Add video file if available
+      if (uploadedFiles.videoFile) {
+        formData.append('video_file', uploadedFiles.videoFile)
+      }
+
+      // Debug logging
+      console.log('Debug - Form data being sent:')
+      console.log('  patient_id:', selectedPatient.patient_id)
+      console.log('  chief_complaint:', chiefComplaint)
+      console.log('  symptoms:', JSON.stringify(selectedSymptoms))
+      console.log('  pain_scale:', painScale[0].toString())
+      console.log('  symptom_duration:', symptomDuration)
+      console.log('  staff_notes:', staffNotes)
+      console.log('  dat_file:', uploadedFiles.datFile)
+      console.log('  hea_file:', uploadedFiles.heaFile)
+      console.log('  dat_normalized_file:', uploadedFiles.datNormalizedFile)
+      console.log('  hea_normalized_file:', uploadedFiles.heaNormalizedFile)
+      console.log('  breath_annotation_file:', uploadedFiles.breathAnnotationFile)
+      console.log('  dat_file.name:', uploadedFiles.datFile?.name)
+      console.log('  hea_file.name:', uploadedFiles.heaFile?.name)
+      console.log('  dat_normalized_file.name:', uploadedFiles.datNormalizedFile?.name)
+      console.log('  hea_normalized_file.name:', uploadedFiles.heaNormalizedFile?.name)
+      console.log('  breath_annotation_file.name:', uploadedFiles.breathAnnotationFile?.name)
+
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval)
+            return 90
+          }
+          return prev + 10
+        })
+      }, 200)
+
+      // Make API call
+      console.log('Making upload request to:', 'http://localhost:8000/api/upload/upload-vital-signs')
+      const response = await fetch('http://localhost:8000/api/upload/upload-vital-signs', {
+        method: 'POST',
+        body: formData,
       })
-    }, 300)
+
+      clearInterval(progressInterval)
+      setUploadProgress(100)
+
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+
+      if (!response.ok) {
+        let errorMessage = 'Upload failed'
+        try {
+          const errorData = await response.json()
+          console.log('Error response data:', errorData)
+          
+          // Handle different error formats
+          if (errorData.detail) {
+            if (Array.isArray(errorData.detail)) {
+              // FastAPI validation errors
+              errorMessage = errorData.detail.map((err: any) => 
+                `${err.loc ? err.loc.join('.') : 'Field'}: ${err.msg}`
+              ).join(', ')
+            } else {
+              errorMessage = errorData.detail
+            }
+          } else if (errorData.message) {
+            errorMessage = errorData.message
+          } else {
+            errorMessage = 'Upload failed'
+          }
+        } catch (parseError) {
+          console.log('Failed to parse error response:', parseError)
+          errorMessage = `Upload failed with status: ${response.status}`
+        }
+        throw new Error(errorMessage)
+      }
+
+      const result = await response.json()
+      console.log('Success response data:', result)
+      
+      setProcessingStatus("Upload successful! Processing vital signs...")
+      
+      // Simulate processing time
+      setTimeout(() => {
+        setProcessingStatus("Analysis complete! Patient added to specialist queue.")
+        setQueuePosition(Math.floor(Math.random() * 5) + 1)
+        
+        // Reset form after successful upload
+        setTimeout(() => {
+          setIsProcessing(false)
+          setUploadProgress(0)
+          setProcessingStatus("")
+          setSelectedPatient(null)
+          setUploadedFiles({
+            datFile: null,
+            heaFile: null,
+            datNormalizedFile: null,
+            heaNormalizedFile: null,
+            breathAnnotationFile: null,
+            videoFile: null,
+          })
+          setChiefComplaint("")
+          setSelectedSymptoms([])
+          setPainScale([0])
+          setSymptomDuration("")
+          setTemperature("")
+          setStaffNotes("")
+          alert("Upload successful! Patient data has been processed and added to specialist queue.")
+        }, 3000)
+      }, 2000)
+
+    } catch (error) {
+      console.error('Upload error:', error)
+      console.error('Error type:', typeof error)
+      console.error('Error constructor:', error?.constructor?.name)
+      
+      setProcessingStatus("Upload failed. Please try again.")
+      setIsProcessing(false)
+      setUploadProgress(0)
+      
+      let errorMessage = 'Unknown error occurred'
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      } else if (error && typeof error === 'object') {
+        // Try to extract error message from object
+        const errorObj = error as any
+        errorMessage = errorObj.message || errorObj.detail || errorObj.error || JSON.stringify(error)
+      }
+      
+      alert(`Upload failed: ${errorMessage}`)
+    }
   }
 
   const formatTime = (seconds: number) => {
@@ -278,7 +518,7 @@ export default function DataUploadPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {/* DAT File Upload */}
                 <div>
                   <Label>ECG Data File (.dat) *</Label>
@@ -346,14 +586,135 @@ export default function DataUploadPage() {
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Max file size: 5MB</p>
                 </div>
+
+                {/* DAT Normalized File Upload */}
+                <div>
+                  <Label>Normalized Vital Signs Data (.dat) *</Label>
+                  <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-2">Processed vital signs data file</p>
+                    <Input
+                      type="file"
+                      accept=".dat"
+                      className="hidden"
+                      id="dat-normalized-file"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleFileUpload("datNormalizedFile", file)
+                      }}
+                    />
+                    <EnhancedButton
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById("dat-normalized-file")?.click()}
+                    >
+                      Choose File
+                    </EnhancedButton>
+                    {uploadedFiles.datNormalizedFile && (
+                      <div className="mt-2 flex items-center justify-center gap-2 text-green-600">
+                        <FileCheck className="h-4 w-4" />
+                        <span className="text-sm">{uploadedFiles.datNormalizedFile.name}</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Max file size: 10MB</p>
+                </div>
+
+                {/* HEA Normalized File Upload */}
+                <div>
+                  <Label>Normalized Header File (.hea) *</Label>
+                  <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-2">Processed header metadata file</p>
+                    <Input
+                      type="file"
+                      accept=".hea"
+                      className="hidden"
+                      id="hea-normalized-file"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleFileUpload("heaNormalizedFile", file)
+                      }}
+                    />
+                    <EnhancedButton
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById("hea-normalized-file")?.click()}
+                    >
+                      Choose File
+                    </EnhancedButton>
+                    {uploadedFiles.heaNormalizedFile && (
+                      <div className="mt-2 flex items-center justify-center gap-2 text-green-600">
+                        <FileCheck className="h-4 w-4" />
+                        <span className="text-sm">{uploadedFiles.heaNormalizedFile.name}</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Max file size: 2MB</p>
+                </div>
+
+                {/* Breath Annotation File Upload */}
+                <div>
+                  <Label>Breathing Annotation File (.breath) *</Label>
+                  <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-2">Respiratory pattern annotations</p>
+                    <Input
+                      type="file"
+                      accept=".breath"
+                      className="hidden"
+                      id="breath-annotation-file"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleFileUpload("breathAnnotationFile", file)
+                      }}
+                    />
+                    <EnhancedButton
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById("breath-annotation-file")?.click()}
+                    >
+                      Choose File
+                    </EnhancedButton>
+                    {uploadedFiles.breathAnnotationFile && (
+                      <div className="mt-2 flex items-center justify-center gap-2 text-green-600">
+                        <FileCheck className="h-4 w-4" />
+                        <span className="text-sm">{uploadedFiles.breathAnnotationFile.name}</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Max file size: 5MB</p>
+                </div>
               </div>
 
               {/* File Validation Status */}
-              {(uploadedFiles.datFile || uploadedFiles.heaFile) && (
+              {(uploadedFiles.datFile || uploadedFiles.heaFile || uploadedFiles.datNormalizedFile || uploadedFiles.heaNormalizedFile || uploadedFiles.breathAnnotationFile) && (
                 <Alert className="border-l-4 border-l-blue-500 bg-blue-50">
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    <p className="text-sm">File validation in progress... Quality check passed ✓</p>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">File validation status:</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                        <span className={uploadedFiles.datFile ? "text-green-600" : "text-gray-400"}>
+                          ✓ Raw ECG Data {uploadedFiles.datFile ? "✓" : "⏳"}
+                        </span>
+                        <span className={uploadedFiles.heaFile ? "text-green-600" : "text-gray-400"}>
+                          ✓ ECG Header {uploadedFiles.heaFile ? "✓" : "⏳"}
+                        </span>
+                        <span className={uploadedFiles.datNormalizedFile ? "text-green-600" : "text-gray-400"}>
+                          ✓ Vital Signs {uploadedFiles.datNormalizedFile ? "✓" : "⏳"}
+                        </span>
+                        <span className={uploadedFiles.heaNormalizedFile ? "text-green-600" : "text-gray-400"}>
+                          ✓ Vital Header {uploadedFiles.heaNormalizedFile ? "✓" : "⏳"}
+                        </span>
+                        <span className={uploadedFiles.breathAnnotationFile ? "text-green-600" : "text-gray-400"}>
+                          ✓ Breathing Data {uploadedFiles.breathAnnotationFile ? "✓" : "⏳"}
+                        </span>
+                      </div>
+                    </div>
                   </AlertDescription>
                 </Alert>
               )}
@@ -378,27 +739,60 @@ export default function DataUploadPage() {
                   </h4>
 
                   <div className="bg-gray-100 rounded-lg p-6 text-center mb-4">
-                    <Video className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 mb-2">Camera preview window</p>
-                    <p className="text-xs text-gray-500">Position patient for optimal VitalLens analysis</p>
+                    {cameraStream ? (
+                      <video
+                        ref={videoRef}
+                        className="w-full max-w-md mx-auto rounded-lg"
+                        autoPlay
+                        muted
+                        playsInline
+                        style={{ transform: 'scaleX(-1)' }}
+                      />
+                    ) : (
+                      <>
+                        <Video className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">Camera preview window</p>
+                        <p className="text-xs text-gray-500">Position patient for optimal VitalLens analysis</p>
+                      </>
+                    )}
                   </div>
 
                   {!isRecording ? (
-                    <EnhancedButton onClick={() => setIsRecording(true)} className="w-full bg-red-600 hover:bg-red-700">
-                      <Play className="h-4 w-4 mr-2" />
-                      Start Recording (2 min max)
-                    </EnhancedButton>
+                    <div className="space-y-2">
+                      <EnhancedButton onClick={startRecording} className="w-full bg-red-600 hover:bg-red-700">
+                        <Play className="h-4 w-4 mr-2" />
+                        Start Recording (30 sec max)
+                      </EnhancedButton>
+                      {!cameraStream && (
+                        <EnhancedButton onClick={startCamera} variant="outline" className="w-full">
+                          <Camera className="h-4 w-4 mr-2" />
+                          Start Camera Preview
+                        </EnhancedButton>
+                      )}
+                    </div>
                   ) : (
                     <div className="space-y-3">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-red-600 mb-2">{formatTime(recordingTime)}</div>
-                        <Progress value={(recordingTime / 120) * 100} className="mb-3" />
+                        <Progress value={(recordingTime / 30) * 100} className="mb-3" />
                         <Badge className="bg-red-100 text-red-800">Recording in progress...</Badge>
                       </div>
-                      <EnhancedButton onClick={() => setIsRecording(false)} variant="outline" className="w-full">
+                      <EnhancedButton onClick={stopRecording} variant="outline" className="w-full">
                         <Square className="h-4 w-4 mr-2" />
                         Stop Recording
                       </EnhancedButton>
+                    </div>
+                  )}
+
+                  {uploadedFiles.videoFile && (
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-green-700">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Video recorded successfully</span>
+                      </div>
+                      <p className="text-xs text-green-600 mt-1">
+                        {uploadedFiles.videoFile.name} ({(uploadedFiles.videoFile.size / (1024 * 1024)).toFixed(1)} MB)
+                      </p>
                     </div>
                   )}
                 </div>
@@ -484,6 +878,24 @@ export default function DataUploadPage() {
                 </div>
               </div>
 
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="temperature">Body Temperature (°C)</Label>
+                  <Input
+                    id="temperature"
+                    type="number"
+                    step="0.1"
+                    min="35"
+                    max="42"
+                    value={temperature}
+                    onChange={(e) => setTemperature(e.target.value)}
+                    placeholder="e.g., 36.5"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Normal range: 36.1-37.2°C</p>
+                </div>
+
+              </div>
+
               <div>
                 <Label>Additional Symptoms (Check all that apply)</Label>
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mt-2">
@@ -559,15 +971,15 @@ export default function DataUploadPage() {
 
               <EnhancedButton
                 onClick={handleSubmit}
-                disabled={!selectedPatient || !uploadedFiles.datFile || !uploadedFiles.heaFile || isProcessing}
+                disabled={!selectedPatient || !uploadedFiles.datFile || !uploadedFiles.heaFile || !uploadedFiles.datNormalizedFile || !uploadedFiles.heaNormalizedFile || !uploadedFiles.breathAnnotationFile || isProcessing}
                 size="lg"
                 className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 {isProcessing ? "Processing..." : "Submit for AI Analysis"}
               </EnhancedButton>
 
-              {(!uploadedFiles.datFile || !uploadedFiles.heaFile) && (
-                <p className="text-sm text-red-600 text-center">Please upload both .dat and .hea files to proceed</p>
+              {(!uploadedFiles.datFile || !uploadedFiles.heaFile || !uploadedFiles.datNormalizedFile || !uploadedFiles.heaNormalizedFile || !uploadedFiles.breathAnnotationFile) && (
+                <p className="text-sm text-red-600 text-center">Please upload all 5 required files to proceed</p>
               )}
             </CardContent>
           </Card>

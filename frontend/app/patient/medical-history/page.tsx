@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Calendar, Clock, FileText, Download, Eye, Activity, Heart, Thermometer, Droplets, Share2, TrendingUp } from "lucide-react"
 import { getCurrentUserId } from "@/lib/client-auth"
 
@@ -147,6 +148,10 @@ export default function MedicalHistoryPage() {
   const [healthReports, setHealthReports] = useState<HealthReport[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("history")
+  const [selectedReport, setSelectedReport] = useState<HealthReport | null>(null)
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [selectedRecord, setSelectedRecord] = useState<MedicalHistoryRecord | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -192,6 +197,146 @@ export default function MedicalHistoryPage() {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  const handleViewReport = (report: HealthReport) => {
+    setSelectedReport(report)
+    setShowReportModal(true)
+  }
+
+  const renderReportContent = (report: HealthReport) => {
+    if (report.type === "summary" && report.title.includes("5-Modal Screening Report")) {
+      // Find matching screening for vital signs data
+      const matchingScreening = screeningHistory.find(s => 
+        s.screening_date === report.screening_date
+      )
+      
+      return (
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-semibold text-lg mb-3">5-Modal Screening Summary</h3>
+            <p className="text-gray-600 mb-4">Complete vital signs analysis and health assessment from your screening session.</p>
+          </div>
+          
+          {matchingScreening && (
+            <>
+              <div>
+                <h4 className="font-medium mb-2">Vital Signs</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  {matchingScreening.vital_signs.map((vital, index) => (
+                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">{vital.measurement_type.replace('_', ' ').toUpperCase()}</span>
+                        <Badge variant={vital.status === 'normal' ? 'default' : 'secondary'}>
+                          {vital.status}
+                        </Badge>
+                      </div>
+                      <p className="text-lg font-semibold mt-1">{vital.value_text}</p>
+                      <p className="text-xs text-gray-500">Normal: {vital.reference_range}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="font-medium mb-2">Overall Assessment</h4>
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">{matchingScreening.overall_notes}</p>
+                </div>
+              </div>
+            </>
+          )}
+          
+          <div>
+            <h4 className="font-medium mb-2">Health Worker Information</h4>
+            <p className="text-sm text-gray-600">
+              Conducted by: {report.screening_id ? `${screeningHistory.find(s => s.id === report.screening_id)?.health_worker_first_name} ${screeningHistory.find(s => s.id === report.screening_id)?.health_worker_last_name}` : 'Health Worker'}
+            </p>
+            <p className="text-sm text-gray-600">
+              Facility: {report.screening_id ? screeningHistory.find(s => s.id === report.screening_id)?.facility_name : 'Health Center'}
+            </p>
+          </div>
+        </div>
+      )
+    }
+    
+    if (report.type === "specialized" && report.title.includes("Detailed Analysis")) {
+      return (
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-semibold text-lg mb-3">Detailed Clinical Analysis</h3>
+            <p className="text-gray-600 mb-4">In-depth analysis of your screening results with clinical insights and recommendations.</p>
+          </div>
+          
+          <div>
+            <h4 className="font-medium mb-2">AI Clinical Findings</h4>
+            <div className="space-y-2">
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-sm font-medium text-yellow-800">Elevated respiratory rate</span>
+                  <Badge variant="outline" className="text-xs">Pulmonology AI</Badge>
+                </div>
+                <p className="text-xs text-yellow-600">Confidence: 85%</p>
+              </div>
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-sm font-medium text-blue-800">Fatigue pattern consistent with systemic stress</span>
+                  <Badge variant="outline" className="text-xs">Internal Medicine AI</Badge>
+                </div>
+                <p className="text-xs text-blue-600">Confidence: 75%</p>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h4 className="font-medium mb-2">Risk Assessment</h4>
+            <div className="p-4 bg-green-50 rounded-lg">
+              <p className="text-sm text-green-800">
+                Overall risk level: <span className="font-semibold">Low to Medium</span>
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                Regular monitoring recommended with follow-up in 2-4 weeks.
+              </p>
+            </div>
+          </div>
+          
+          <div>
+            <h4 className="font-medium mb-2">Recommendations</h4>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li className="flex items-start gap-2">
+                <div className="w-1 h-1 bg-gray-400 rounded-full mt-2"></div>
+                Continue current medication regimen as prescribed
+              </li>
+              <li className="flex items-start gap-2">
+                <div className="w-1 h-1 bg-gray-400 rounded-full mt-2"></div>
+                Schedule follow-up appointment within 2-3 weeks
+              </li>
+              <li className="flex items-start gap-2">
+                <div className="w-1 h-1 bg-gray-400 rounded-full mt-2"></div>
+                Monitor symptoms and report any worsening conditions
+              </li>
+            </ul>
+          </div>
+        </div>
+      )
+    }
+    
+    return (
+      <div className="space-y-4">
+        <p className="text-gray-600">{report.description}</p>
+        <div>
+          <h4 className="font-medium mb-2">Report Contents</h4>
+          <ul className="space-y-1 text-sm text-gray-600">
+            {report.includes.map((item, index) => (
+              <li key={index} className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -306,7 +451,14 @@ export default function MedicalHistoryPage() {
                   </div>
 
                   <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedRecord(record)
+                        setShowDetailsModal(true)
+                      }}
+                    >
                       <Eye className="mr-2 h-3 w-3" />
                       View Details
                     </Button>
@@ -394,15 +546,15 @@ export default function MedicalHistoryPage() {
                 </div>
 
                 <div className="flex gap-2 pt-4 border-t">
-                  <Button size="sm">
+                  <Button size="sm" disabled>
                     <Download className="mr-2 h-3 w-3" />
                     Download PDF
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleViewReport(report)}>
                     <Eye className="mr-2 h-3 w-3" />
-                    Preview
+                    View Report
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled>
                     <Share2 className="mr-2 h-3 w-3" />
                     Share
                   </Button>
@@ -477,6 +629,112 @@ export default function MedicalHistoryPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Report Modal */}
+      <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedReport?.title}</DialogTitle>
+            <DialogDescription>
+              {selectedReport && `Generated on ${formatDate(selectedReport.generated_at)} • ${selectedReport.period_description}`}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedReport && renderReportContent(selectedReport)}
+        </DialogContent>
+      </Dialog>
+
+      {/* Record Details Modal */}
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Health Screening Details</DialogTitle>
+            <DialogDescription>
+              {selectedRecord && `Screening completed on ${formatDate(selectedRecord.screening_date)} at ${selectedRecord.facility_name}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedRecord && (
+            <div className="space-y-6">
+              {/* Screening Overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Screening Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Date</label>
+                      <p className="text-sm font-medium">{formatDate(selectedRecord.screening_date)}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Status</label>
+                      <Badge className={getStatusColor(selectedRecord.overall_status)}>
+                        {selectedRecord.overall_status}
+                      </Badge>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Health Worker</label>
+                      <p className="text-sm font-medium">
+                        {selectedRecord.health_worker_first_name} {selectedRecord.health_worker_last_name}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Facility</label>
+                      <p className="text-sm font-medium">{selectedRecord.facility_name}</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Clinical Notes</label>
+                    <p className="text-sm text-gray-700 mt-1">
+                      {selectedRecord.overall_notes || 'Health screening completed successfully. All vital signs recorded.'}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Vital Signs Details */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Heart className="h-5 w-5" />
+                    Vital Signs Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedRecord.vital_signs.map((vital, index) => (
+                      <div key={index} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium">{vital.measurement_type}</h4>
+                          <Badge className={getStatusColor(vital.status)}>
+                            {vital.status}
+                          </Badge>
+                        </div>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {vital.value_text || `${vital.value_numeric} ${vital.unit}`}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Reference: {vital.reference_range}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {selectedRecord.vital_signs.length === 0 && (
+                    <p className="text-center text-gray-500 py-8">
+                      No detailed vital signs data available for this screening.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -38,7 +38,7 @@ const roleConfig = {
     title: "Health Worker Portal",
     description: "Access your community health center dashboard and patient management tools.",
     fields: [
-      { id: "identifier", label: "Email or Phone", type: "text", placeholder: "maria@puskesmas.com or +6281234567890" },
+      { id: "identifier", label: "Employee ID", type: "text", placeholder: "HW-001" },
       { id: "password", label: "Password", type: "password" },
     ],
     redirectPath: "/health-worker/dashboard",
@@ -49,7 +49,7 @@ const roleConfig = {
     title: "Specialist Medical Portal",
     description: "Access the specialist dashboard and provide expert medical consultations remotely.",
     fields: [
-      { id: "identifier", label: "Email Address", type: "email", placeholder: "dr.sarah@hospital.com" },
+      { id: "identifier", label: "Professional ID", type: "text", placeholder: "SP-001" },
       { id: "password", label: "Password", type: "password" },
     ],
     redirectPath: "/specialist/dashboard",

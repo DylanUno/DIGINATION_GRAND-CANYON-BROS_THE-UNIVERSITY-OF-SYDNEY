@@ -57,6 +57,7 @@ class Patient(Base):
     known_conditions = Column(Text, nullable=True)  # JSON string of conditions
     current_medications = Column(Text, nullable=True)  # JSON string of medications
     allergies = Column(Text, nullable=True)  # JSON string of allergies
+    previous_surgeries = Column(Text, nullable=True)  # Surgical history and hospitalizations
     
     # Administrative
     patient_id = Column(String, unique=True, nullable=True, index=True)  # External patient ID

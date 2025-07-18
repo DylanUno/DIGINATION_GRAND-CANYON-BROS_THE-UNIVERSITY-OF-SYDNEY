@@ -15,13 +15,13 @@ export default function LandingPageComponent() {
         </Link>
         <nav className="ml-auto flex gap-2">
           <EnhancedButton asChild variant="ghost" size="sm">
-            <Link href="/auth/login/patient">Patient Access</Link>
+            <Link href="/auth/login/health-worker">Health Worker Portal</Link>
           </EnhancedButton>
           <EnhancedButton asChild variant="ghost" size="sm">
             <Link href="/auth/login/specialist">Specialist Portal</Link>
           </EnhancedButton>
           <EnhancedButton asChild size="sm">
-            <Link href="/auth/login/health-worker">Health Worker Portal</Link>
+            <Link href="/auth/login/patient">Patient Access</Link>
           </EnhancedButton>
         </nav>
       </header>
@@ -85,13 +85,7 @@ export default function LandingPageComponent() {
               </div>
 
               <div className="relative animate-fade-in">
-                <div className="bg-gradient-to-br from-trust-blue/20 to-health-teal/20 rounded-2xl p-12 text-center">
-                  <div className="feature-icon health mx-auto mb-4" style={{ width: '120px', height: '120px' }}>
-                    <HeartPulse className="h-16 w-16" />
-                  </div>
-                  <h3 className="text-h2 font-bold text-trust-blue mb-2">VitalSense Pro</h3>
-                  <p className="text-body text-neutral-600">AI-Powered Health Analysis Platform</p>
-                </div>
+                {/* White background space */}
               </div>
             </div>
           </div>

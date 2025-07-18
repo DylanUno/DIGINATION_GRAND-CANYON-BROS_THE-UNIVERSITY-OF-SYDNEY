@@ -404,12 +404,14 @@ export default function PatientResults() {
           {recommendations.length > 0 ? (
             <>
               {/* Group recommendations by category */}
-              {['medical_followup', 'diet_nutrition', 'physical_activity', 'lifestyle'].map(category => {
+              {['specialist_treatment', 'follow_up', 'medical_followup', 'diet_nutrition', 'physical_activity', 'lifestyle'].map(category => {
                 const categoryRecommendations = recommendations.filter(rec => rec.category === category)
                 if (categoryRecommendations.length === 0) return null
 
                 const getCategoryTitle = (cat: string) => {
                   switch (cat) {
+                    case 'specialist_treatment': return 'Specialist Treatment Plan'
+                    case 'follow_up': return 'Follow-up Instructions' 
                     case 'medical_followup': return 'Medical Follow-up'
                     case 'diet_nutrition': return 'Diet & Nutrition'
                     case 'physical_activity': return 'Physical Activity'
@@ -420,6 +422,8 @@ export default function PatientResults() {
 
                 const getCategoryIcon = (cat: string) => {
                   switch (cat) {
+                    case 'specialist_treatment': return <Stethoscope className="h-4 w-4 text-purple-600" />
+                    case 'follow_up': return <Calendar className="h-4 w-4 text-blue-600" />
                     case 'medical_followup': return <Clock className="h-4 w-4" />
                     case 'diet_nutrition': return <Droplets className="h-4 w-4" />
                     case 'physical_activity': return <Activity className="h-4 w-4" />
@@ -444,9 +448,14 @@ export default function PatientResults() {
                           ) : (
                             <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           )}
-                          <span className={rec.priority === 'urgent' ? 'text-red-700 font-medium' : rec.priority === 'high' ? 'text-yellow-700 font-medium' : ''}>
-                            {rec.recommendation}
-                          </span>
+                          <div className={rec.priority === 'urgent' ? 'text-red-700 font-medium' : rec.priority === 'high' ? 'text-yellow-700 font-medium' : ''}>
+                            <span className="whitespace-pre-line">{rec.recommendation}</span>
+                            {category === 'specialist_treatment' && (
+                              <div className="text-xs text-purple-600 font-medium mt-1">
+                                ✓ Reviewed by Medical Specialist
+                              </div>
+                            )}
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -457,9 +466,13 @@ export default function PatientResults() {
             </>
           ) : (
             <div className="text-center py-8">
-              <CheckCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Specific Recommendations</h3>
-              <p className="text-gray-600">Your screening results don't require any specific recommendations at this time. Continue maintaining your current healthy lifestyle.</p>
+              <Stethoscope className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Specialist Review Pending</h3>
+              <p className="text-gray-600">Your health screening results are being reviewed by our medical specialists. Treatment recommendations will appear here once the review is complete.</p>
+              <div className="mt-4 text-sm text-blue-600">
+                <Clock className="inline h-4 w-4 mr-1" />
+                Reviews are typically completed within 24-48 hours
+              </div>
             </div>
           )}
 

@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
       knownConditions,
       currentMedications,
       allergies,
+      previousSurgeries,
       createLogin,
       privacyConsent,
       dataUsageConsent
@@ -112,9 +113,9 @@ export async function POST(request: NextRequest) {
           user_id, patient_id, full_name, age, gender, weight_kg, height_cm, phone, email, 
           address, village, district, city, province,
           emergency_contact_name, emergency_contact_phone, emergency_contact_relationship,
-          known_conditions, current_medications, allergies, 
+          known_conditions, current_medications, allergies, previous_surgeries,
           registered_at_health_center_id, is_active, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, true, NOW(), NOW()) 
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, true, NOW(), NOW()) 
         RETURNING id, patient_id`,
         [
           userIdForPatient,
@@ -137,6 +138,7 @@ export async function POST(request: NextRequest) {
           knownConditions || '',
           currentMedications || '',
           allergies || '',
+          previousSurgeries || '',
           healthCenterId
         ]
       );
