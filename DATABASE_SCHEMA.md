@@ -1,104 +1,177 @@
-# VitalSense Pro Database Schema
+# VitalSense Pro: Database Schema Documentation
 
-This document provides a detailed overview of the PostgreSQL database schema for the VitalSense Pro platform. It outlines the structure of each table, the columns they contain, and the relationships between them.
-
----
-
-## 1. `users`
-
-Stores authentication and profile information for all user types.
-
-| Column                   | Type         | Description                                     |
-| ------------------------ | ------------ | ----------------------------------------------- |
-| `id` (PK)                | Integer      | Unique identifier for the user.                 |
-| `email`                  | String       | User's email address (optional).                |
-| `phone`                  | String       | User's phone number (optional).                 |
-| `professional_credentials` | String       | Unique ID for specialists.                      |
-| `health_center_id`       | Integer      | ID of the health center for health workers.     |
-| `password_hash`          | String       | Hashed user password.                           |
-| `role`                   | Enum         | `HEALTH_WORKER`, `SPECIALIST`, `PATIENT`.       |
-| `is_active`              | Boolean      | Whether the user account is active.             |
-| `is_verified`            | Boolean      | Whether a specialist's license is verified.     |
-| `full_name`              | String       | The user's full name.                           |
-| `created_at`             | DateTime     | Timestamp of user creation.                     |
-| `updated_at`             | DateTime     | Timestamp of the last update.                   |
-| `last_login`             | DateTime     | Timestamp of the last login.                    |
+This document provides a comprehensive and accurate overview of the PostgreSQL database schema for the VitalSense Pro platform. It is based on the ground truth from the `database_schema.sql` file and provides context for how each table is used within the application.
 
 ---
 
-## 2. `patients`
+## Schema Overview
 
-Stores demographic and medical information for patients.
+The database is designed with a modular, relational structure to securely store user data, patient information, and the results of health analysis sessions.
 
-| Column                         | Type    | Description                                     |
-| ------------------------------ | ------- | ----------------------------------------------- |
-| `id` (PK)                      | Integer | Unique identifier for the patient.              |
-| `user_id` (FK to `users`)      | Integer | Links to the patient's user account.            |
-| `full_name`                    | String  | Patient's full name.                            |
-| `age`                          | Integer | Patient's age.                                  |
-| `gender`                       | Enum    | `MALE`, `FEMALE`, `OTHER`.                      |
-| `weight_kg`, `height_cm`       | Float   | Patient's physical characteristics.             |
-| `phone`, `email`               | String  | Patient's contact information.                  |
-| `address`, `village`, etc.     | Text    | Patient's address details.                      |
-| `emergency_contact_name`, etc. | String  | Emergency contact information.                  |
-| `known_conditions`, etc.       | Text    | Patient's medical history.                      |
-| `patient_id`                   | String  | External patient ID.                            |
-| `registered_at_health_center_id` (FK to `health_centers`) | Integer | The health center where the patient is registered. |
-| `is_active`                    | Boolean | Whether the patient's record is active.         |
+```mermaid
+erDiagram
+    users ||--o{ patients : "has"
+    users ||--o{ health_workers : "has"
+    users ||--o{ specialists : "has"
+    health_centers ||--o{ patients : "registered at"
+    health_centers ||--o{ health_workers : "employs"
+    specialists ||--|{ specialist_assignments : "assigned to"
+    health_centers ||--|{ specialist_assignments : "assigns"
+    patients ||--|{ health_screenings : "undergoes"
+    health_workers ||--o{ health_screenings : "conducts"
+    health_screenings ||--|{ vital_signs : "includes"
+    health_screenings ||--|{ specialist_queue : "queued for"
+    specialists ||--o{ specialist_queue : "reviews"
+    specialist_queue ||--o{ specialist_consultations : "results in"
+
+    users {
+        int id PK
+        int role_id FK
+        varchar password_hash
+        bool is_active
+    }
+    patients {
+        int id PK
+        int user_id FK
+        varchar phone_number
+        varchar first_name
+        varchar last_name
+        date date_of_birth
+        int health_center_id FK
+    }
+    health_workers {
+        int id PK
+        int user_id FK
+        varchar employee_id
+        varchar first_name
+        varchar last_name
+        int health_center_id FK
+    }
+    specialists {
+        int id PK
+        int user_id FK
+        varchar professional_credentials
+        varchar first_name
+        varchar last_name
+        varchar specialty
+    }
+    health_centers {
+        int id PK
+        varchar name
+        text address
+        varchar type
+    }
+    health_screenings {
+        int id PK
+        int patient_id FK
+        int health_worker_id FK
+        timestamp screening_date
+        varchar status
+    }
+    vital_signs {
+        int id PK
+        int screening_id FK
+        varchar measurement_type
+        decimal value_numeric
+        varchar unit
+    }
+    specialist_assignments {
+        int id PK
+        int specialist_id FK
+        int health_center_id FK
+        bool is_active
+    }
+    specialist_queue {
+        int id PK
+        int screening_id FK
+        int assigned_specialist_id FK
+        varchar status
+        varchar risk_level
+    }
+    specialist_consultations {
+        int id PK
+        int specialist_queue_id FK
+        text clinical_notes
+        varchar primary_diagnosis_code
+    }
+```
 
 ---
 
-## 3. `health_centers`
+## 1. Core User & Authentication Tables
 
-Represents the local health facilities (Puskesmas).
+### `user_roles`
+-   **Description**: Defines the different roles a user can have within the system.
+-   **Columns**: `id`, `role_name`, `description`
 
-| Column      | Type    | Description                           |
-| ----------- | ------- | ------------------------------------- |
-| `id` (PK)   | Integer | Unique identifier for the health center.|
-| `name`      | String  | Name of the health center.            |
-| `code`      | String  | Unique facility code.                 |
-| `address`   | Text    | Address of the health center.         |
-| `city`      | String  | City where the health center is located.|
-| `province`  | String  | Province where the health center is located.|
-| `phone`     | String  | Contact phone number.                 |
-| `email`     | String  | Contact email address.                |
+### `users`
+-   **Description**: The central table for authentication. Stores login credentials and basic user information.
+-   **Columns**: `id`, `role_id` (FK to `user_roles`), `password_hash`, `is_active`, `last_login`
 
----
-
-## 4. `analysis_sessions`
-
-The core table that stores data related to each patient analysis session.
-
-| Column                   | Type    | Description                                     |
-| ------------------------ | ------- | ----------------------------------------------- |
-| `id` (PK)                | Integer | Unique identifier for the session.              |
-| `session_id`             | String  | UUID for organizing session files.              |
-| `patient_id` (FK to `patients`) | String  | The patient being analyzed.                     |
-| `health_worker_id` (FK to `users`) | Integer | The health worker who uploaded the data.        |
-| `specialist_user_id` (FK to `users`) | Integer | The specialist who reviewed the session.      |
-| `status`                 | Enum    | `UPLOADED`, `PROCESSING`, `COMPLETED`, etc.     |
-| `ai_risk_level`          | Enum    | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.            |
-| `dat_file_path`, etc.    | String  | Paths to the uploaded vital signs files.        |
-| `features`               | JSON    | Extracted vital signs features.                 |
-| `mai_dxo_data`           | JSON    | Data from the AI analysis pipeline.             |
-| `heart_rate_bpm`, etc.   | Float   | Processed vital signs data.                     |
-| `specialist_notes`       | Text    | Notes from the specialist.                      |
+### `user_sessions` & `login_attempts`
+-   **Description**: Security tables that track user sessions and login attempts to prevent unauthorized access.
+-   **Columns**: `id`, `user_id` (FK to `users`), `session_token`, `ip_address`, `success`
 
 ---
 
-## 5. `specialist_consultations`
+## 2. User Profile Tables
 
-Tracks detailed feedback and history from specialist consultations.
+### `patients`
+-   **Description**: Contains comprehensive demographic and medical information for patients.
+-   **Columns**: `id`, `user_id` (FK to `users`), `phone_number`, `first_name`, `last_name`, `date_of_birth`, `health_center_id` (FK to `health_centers`), `allergies`, `medical_conditions`
 
-| Column                   | Type    | Description                                     |
-| ------------------------ | ------- | ----------------------------------------------- |
-| `id` (PK)                | Integer | Unique identifier for the consultation.         |
-| `analysis_session_id` (FK to `analysis_sessions`) | Integer | The analysis session being reviewed.            |
-| `specialist_user_id` (FK to `users`) | Integer | The specialist providing the consultation.      |
-| `patient_id` (FK to `patients`) | Integer | The patient being reviewed.                     |
-| `consultation_type`      | Enum    | `INITIAL_REVIEW`, `FOLLOW_UP`, etc.             |
-| `priority`               | Enum    | `ROUTINE`, `URGENT`, `EMERGENCY`.               |
-| `clinical_notes`         | Text    | The specialist's detailed clinical notes.       |
-| `primary_diagnosis_code` | String  | The primary ICD-10 diagnosis code.              |
-| `treatment_plan`         | Text    | The recommended treatment plan.                 |
-| `follow_up_required`     | Boolean | Whether a follow-up is required.                | 
+### `health_workers`
+-   **Description**: Stores information about health workers, including their employee ID and assigned health center.
+-   **Columns**: `id`, `user_id` (FK to `users`), `employee_id`, `first_name`, `last_name`, `health_center_id` (FK to `health_centers`)
+
+### `specialists`
+-   **Description**: Contains detailed information about medical specialists, including their credentials, specialty, and license verification status.
+-   **Columns**: `id`, `user_id` (FK to `users`), `professional_credentials`, `first_name`, `last_name`, `specialty`, `medical_license_number`, `license_verified`
+
+### `health_centers`
+-   **Description**: Represents the local health facilities (Puskesmas) where patients are registered and health workers are employed.
+-   **Columns**: `id`, `name`, `address`, `type`
+
+---
+
+## 3. Health Analysis & Consultation Tables
+
+### `health_screenings`
+-   **Description**: The core table that represents a single health analysis session for a patient.
+-   **Columns**: `id`, `patient_id` (FK to `patients`), `health_worker_id` (FK to `health_workers`), `screening_date`, `status`, `overall_status` ('healthy', 'attention_needed', 'urgent')
+
+### `vital_signs`
+-   **Description**: Stores the individual vital sign measurements collected during a health screening.
+-   **Columns**: `id`, `screening_id` (FK to `health_screenings`), `measurement_type`, `value_numeric`, `value_text`, `unit`, `status`
+
+### `specialist_queue`
+-   **Description**: Manages the queue of health screenings that are waiting for a specialist to review.
+-   **Columns**: `id`, `screening_id` (FK to `health_screenings`), `assigned_specialist_id` (FK to `specialists`), `status`, `risk_level`, `priority_score`
+
+### `specialist_consultations`
+-   **Description**: Tracks the detailed feedback, diagnosis, and recommendations from a specialist's review.
+-   **Columns**: `id`, `specialist_queue_id` (FK to `specialist_queue`), `clinical_notes`, `primary_diagnosis_code`, `treatment_plan`, `follow_up_required`
+
+---
+
+## 4. Supporting Tables
+
+### `specialist_assignments`
+-   **Description**: Manages the assignment of specialists to specific health centers.
+-   **Columns**: `id`, `specialist_id` (FK to `specialists`), `health_center_id` (FK to `health_centers`), `is_active`
+
+### `health_reports`
+-   **Description**: Stores information about generated health reports (e.g., PDFs).
+-   **Columns**: `id`, `screening_id` (FK to `health_screenings`), `title`, `file_path`
+
+### `appointments`
+-   **Description**: Manages patient appointments for follow-up consultations.
+-   **Columns**: `id`, `patient_id` (FK to `patients`), `appointment_date`, `status`
+
+### `health_recommendations`
+-   **Description**: Stores specific health recommendations generated by the AI or a specialist.
+-   **Columns**: `id`, `screening_id` (FK to `health_screenings`), `category`, `recommendation_text`, `priority`
+
+### `patient_notifications`
+-   **Description**: Manages notifications sent to patients (e.g., appointment reminders).
+-   **Columns**: `id`, `patient_id` (FK to `patients`), `title`, `message`, `read_status` 
