@@ -13,10 +13,12 @@ from datetime import datetime
 from typing import Optional
 import json
 
+from dotenv import load_dotenv
 from database import get_db
 from models.patient import Patient
 from utils.auth import get_current_user
 
+load_dotenv()
 router = APIRouter()
 
 # Video upload constants
@@ -38,7 +40,9 @@ def extract_video_vital_signs(video_path: str) -> dict:
         import os
         
         # VitalLens API configuration
-        VITALLENS_API_KEY = "Ke7mPscxZ010IODKVNdTM2FCG4B5UmoP5e6ebv1G"
+        VITALLENS_API_KEY = os.getenv("VITALLENS_API_KEY")
+        if not VITALLENS_API_KEY:
+            raise Exception("VITALLENS_API_KEY not found in environment variables")
         API_URL = "https://api.rouast.com/vitallens-v3/file"
         
         print(f"\n" + "="*80)
