@@ -263,6 +263,16 @@ The frontend uses Node.js and Next.js. Key dependencies are in `frontend/package
 
 ---
 
+## 📚 Documentation
+
+For a deeper understanding of the project's technical details, please refer to the following documents:
+
+-   **[System Architecture](ARCHITECTURE.md)**: An in-depth look at the frontend and backend architecture, data flow, and key design decisions.
+-   **[Database Schema](DATABASE_SCHEMA.md)**: A detailed overview of the PostgreSQL database, including table structures and relationships.
+-   **[API Documentation](API_DOCUMENTATION.md)**: A comprehensive guide to the backend API, detailing all endpoints and their usage.
+
+---
+
 ## 🔍 Troubleshooting
 
 -   **Page Loads Indefinitely**: This usually means the frontend is running but the backend is not. Make sure both services are running by using `./run_app.sh`.
