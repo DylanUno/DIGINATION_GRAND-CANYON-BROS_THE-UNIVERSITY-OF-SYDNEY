@@ -16,6 +16,13 @@ from config import settings
 # Load environment variables
 load_dotenv()
 
+def anonymize_patient_data(data: Dict) -> Dict:
+    """Removes personally identifiable information (PII) from patient data."""
+    if 'personal_information' in data:
+        data['personal_information'].pop('full_name', None)
+        data['personal_information'].pop('phone_number', None)
+    return data
+
 @dataclass
 class DebateRound:
     """Represents a single round of debate between specialists"""
@@ -1526,7 +1533,8 @@ class VitalSenseDashboardFormatter:
 # Main pipeline function
 def process_patient_with_mai_dxo(patient_data: Dict, include_dashboard: bool = True) -> Dict[str, Any]:
     """
-    Main function to process patient data through the MAI-DxO pipeline
+    Main function to process patient data through the MAI-DxO pipeline.
+    This function anonymizes the data before sending it to the AI panel.
     
     Args:
         patient_data: Complete patient data including vital signs, demographics, symptoms
@@ -1535,9 +1543,18 @@ def process_patient_with_mai_dxo(patient_data: Dict, include_dashboard: bool = T
     Returns:
         Complete analysis with debate history, final consensus, and optional dashboard format
     """
-    # Run the comprehensive MAI-DxO analysis
+    # Anonymize a deep copy of the patient data before sending to the AI panel
+    anonymized_data = json.loads(json.dumps(patient_data))
+    anonymized_data = anonymize_patient_data(anonymized_data)
+
+    # Run the comprehensive MAI-DxO analysis with the anonymized data
     moderator = VitalSenseDebateModerator()
-    mai_dxo_result = moderator.moderate_panel_discussion(patient_data)
+    mai_dxo_result = moderator.moderate_panel_discussion(anonymized_data)
+    
+    # IMPORTANT: Re-attach the original, non-anonymized patient data to the final result object.
+    # This ensures that only anonymized data is present in the debate history sent to the LLM,
+    # while the complete data is preserved for secure storage within our system.
+    mai_dxo_result['patient_data'] = patient_data
     
     # Add dashboard formatting if requested
     if include_dashboard:

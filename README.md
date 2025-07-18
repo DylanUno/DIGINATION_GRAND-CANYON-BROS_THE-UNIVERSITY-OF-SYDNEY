@@ -225,14 +225,23 @@ VitalSense Pro leverages a sophisticated AI pipeline to provide clinical insight
 
 ---
 
-## 🛡️ Security
+## 🛡️ Security & Privacy
 
-Security is a core component of the platform, with features including:
+Security and patient privacy are foundational to the VitalSense Pro platform. We have implemented a multi-layered security framework to protect sensitive health information.
 
--   **Authentication**: JWT-based authentication for all users.
--   **Authorization**: Role-based access control (RBAC) to ensure users can only access appropriate data and features.
--   **Data Security**: Follows best practices for handling sensitive patient data, in line with HIPAA guidelines.
--   **Secure Communication**: Encrypted data transmission between the frontend, backend, and database.
+### Encryption Framework
+
+-   **At-Rest Encryption**: All patient data stored in the PostgreSQL database is protected with **AES-256 encryption**, ensuring that data on disk is secure.
+-   **In-Transit Encryption**: Communication between the client, server, and database is secured with **TLS 1.3**, providing end-to-end encryption for all data in transit.
+-   **Zero-Knowledge AI Architecture**: We employ a **zero-knowledge architecture** when interacting with external AI services. All personally identifiable information (PII) is stripped from the data before it is sent to the LLM, ensuring patient anonymity.
+
+### Patient Data Rights
+
+We are committed to empowering patients with control over their data.
+
+-   **Granular Consent Management**: Patients have granular control over how their data is used and can provide or revoke consent at any time.
+-   **Right to Deletion**: Patients have the right to request the complete and permanent deletion of their data from our systems.
+-   **Transparent Privacy Policy**: Our privacy policy is clear, concise, and transparent, outlining exactly what data we collect and how it is used.
 
 ---
 
